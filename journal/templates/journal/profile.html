@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-2xl mx-auto mt-8 p-6 rounded-2xl shadow-lg bg-[#f5f0fb]">
+
+  <!-- User Name and Follow Button -->
+  <div class="flex justify-between items-center">
+    <h2 class="text-2xl font-semibold text-[#6c5ecf]">@{{ target_user.username }}</h2>
+
+    {% if not is_own_profile %}
+      <form method="POST" action="{% url 'toggle_follow' target_user.username %}?next={{ request.path }}">
+        {% csrf_token %}
+        <button type="submit"
+                class="px-4 py-1 rounded-full text-sm font-medium transition
+                       {% if is_following %}
+                         bg-red-100 text-red-600 hover:bg-red-200
+                       {% else %}
+                         bg-indigo-100 text-indigo-600 hover:bg-indigo-200
+                       {% endif %}">
+          {% if is_following %}Unfollow{% else %}Follow{% endif %}
+        </button>
+      </form>
+    {% endif %}
+  </div>
+
+  <!-- Follower / Following Count -->
+  <div class="text-sm text-[#bfa7f2] mt-2 flex gap-4">
+    <a href="{% url 'followers_list' target_user.username %}" class="hover:underline hover:text-[#a88fe8]">
+      <strong>{{ profile.followers.count }}</strong> followers
+    </a>
+    <a href="{% url 'following_list' target_user.username %}" class="hover:underline hover:text-[#a88fe8]">
+      <strong>{{ profile.following.count }}</strong> following
+    </a>
+  </div>
+
+  <hr class="my-4 border-[#e0d4f7]">
+
+  <!-- Journal Entry List -->
+  <div>
+    <h3 class="text-lg font-bold mb-3 text-[#726a60]">Journal Entries</h3>
+    {% for entry in entries %}
+      <div class="mb-4 p-4 rounded shadow-sm border
+           {% if entry.emotions.all %}
+             {% with entry.emotions.first.color as bg_color %}
+               "style="background-color: {{ bg_color }};"
+             {% endwith %}
+           {% else %}
+             bg-[#fff7f0]
+           {% endif %}">
+        <p class="text-[#5e4b3c] whitespace-pre-wrap">{{ entry.content }}</p>
+        <p class="text-xs mt-1 text-[#6c5ecf]">{{ entry.created_at|date:"M d, Y" }}</p>
+
+        {% if request.user == entry.author %}
+          <div class="mt-2 flex gap-4 text-sm">
+            <a href="{% url 'edit_entry' entry.id %}" class="text-[#726a60] hover:text-[#5c5047] font-medium">Edit</a>
+            <form method="POST" action="{% url 'delete_entry' entry.id %}" onsubmit="return confirm('Do you really want to delete this entry?')">
+              {% csrf_token %}
+              <button type="submit" class="text-[#e76f51] hover:text-[#d1543b] font-medium">Delete</button>
+            </form>
+          </div>
+        {% endif %}
+      </div>
+    {% empty %}
+      <p class="text-gray-400">No entries yet.</p>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

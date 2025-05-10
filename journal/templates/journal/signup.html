@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="max-w-sm mx-auto py-14 px-6 bg-[#f5f0fb] rounded-2xl shadow-sm">
+  <h2 class="text-3xl font-serif font-bold text-[#6c5ecf] mb-8 text-center tracking-wide">
+    Join Soundlog
+  </h2>
+
+  <!-- 🔥 에러 메시지 출력 -->
+  {% if form.errors %}
+    <div class="bg-red-100 border border-red-300 text-red-700 p-3 rounded mb-4 text-sm">
+      <ul class="list-disc pl-5">
+        {% for field in form %}
+          {% for error in field.errors %}
+            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+          {% endfor %}
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <form method="post" class="space-y-6">
+    {% csrf_token %}
+
+    <div>
+      <label for="id_username" class="block text-sm font-medium text-[#726a60] mb-1">Username</label>
+      {% render_field form.username class="w-full font-serif px-4 py-2 border border-[#dacbed] rounded-md bg-white shadow-sm focus:ring-2 focus:ring-[#cdb4db]" %}
+    </div>
+
+    <div>
+      <label for="id_email" class="block text-sm font-medium text-[#726a60] mb-1">Email</label>
+      {% render_field form.email class="w-full font-serif px-4 py-2 border border-[#dacbed] rounded-md bg-white shadow-sm focus:ring-2 focus:ring-[#cdb4db]" %}
+    </div>
+
+    <div>
+      <label for="id_password1" class="block text-sm font-medium text-[#726a60] mb-1">Password</label>
+      {% render_field form.password1 class="w-full font-serif px-4 py-2 border border-[#dacbed] rounded-md bg-white shadow-sm focus:ring-2 focus:ring-[#cdb4db]" %}
+    </div>
+
+    <div>
+      <label for="id_password2" class="block text-sm font-medium text-[#726a60] mb-1">Confirm Password</label>
+      {% render_field form.password2 class="w-full font-serif px-4 py-2 border border-[#dacbed] rounded-md bg-white shadow-sm focus:ring-2 focus:ring-[#cdb4db]" %}
+    </div>
+
+    <div class="text-center">
+      <button type="submit"
+              class="bg-[#bfa7f2] hover:bg-[#a88fe8] text-white px-6 py-2 rounded-full font-semibold shadow-md transition transform hover:scale-105">
+        Sign Up
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

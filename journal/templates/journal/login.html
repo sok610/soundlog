@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="max-w-sm mx-auto py-14 px-6 bg-[#f5f0fb] rounded-2xl shadow-sm">
+  <h2 class="text-3xl font-serif font-bold text-[#6c5ecf] mb-8 text-center tracking-wide">
+    Login to Soundlog
+  </h2>
+
+  <!-- 🔥 로그인 실패 시 에러 메시지 표시 -->
+  {% if form.errors %}
+    <div class="bg-red-100 border border-red-300 text-red-700 p-3 rounded mb-6 text-sm">
+      <ul class="list-disc pl-5">
+        {% for field in form %}
+          {% for error in field.errors %}
+            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+          {% endfor %}
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <form method="post" class="space-y-6">
+    {% csrf_token %}
+
+    <div>
+      <label for="id_username" class="block text-sm font-medium text-[#726a60] mb-1">Username</label>
+      <input type="text" name="username" id="id_username"
+             class="w-full px-4 py-2 border border-[#dacbed] rounded-md bg-white shadow-sm focus:ring-2 focus:ring-[#cdb4db] font-serif"
+             value="{{ form.username.value|default:'' }}">
+    </div>
+
+    <div>
+      <label for="id_password" class="block text-sm font-medium text-[#726a60] mb-1">Password</label>
+      <input type="password" name="password" id="id_password"
+             class="w-full px-4 py-2 border border-[#dacbed] rounded-md bg-white shadow-sm focus:ring-2 focus:ring-[#cdb4db] font-serif">
+    </div>
+
+    <!-- Password Reset -->
+    <p class="text-sm text-center mt-4">
+      <a href="{% url 'password_reset' %}" class="text-[#bfa7f2] hover:text-[#a88fe8] hover:underline">
+        Forgot your password?
+      </a>
+    </p>
+
+    <div class="text-center">
+      <button type="submit"
+              class="bg-[#bfa7f2] hover:bg-[#a88fe8] text-white px-6 py-2 rounded-full font-semibold shadow-md transition transform hover:scale-105">
+        Log In
+      </button>
+    </div>
+  </form>
+
+</div>
+{% endblock %}

@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-10 px-6">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-3xl font-serif font-bold text-[#bfa7f2] tracking-wide">
+      Feed
+    </h2>
+    <a href="{% url 'write_entry' %}"
+      class="text-sm bg-[#bfa7f2] text-white font-medium px-4 py-2 rounded-full shadow-sm hover:bg-[#a88fe8] transition">
+    Write
+    </a>
+  </div>
+
+  <div class="grid gap-6">
+    {% for entry in entries %}
+      {% with first_emotion=entry.emotions.first %}
+        <div class="border border-[#f1edf9] rounded-xl shadow-sm p-6 transition hover:shadow-md"
+          style="background-color: {{ first_emotion.color|default:'#ffffff' }};">
+
+          <div class="flex justify-between items-center mb-3">
+            <p class="text-sm text-[#6c5ecf]">
+              by <a href="{% url 'user_profile' entry.author.username %}"
+                    class="text-[#bfa7f2] hover:underline font-medium">
+                @{{ entry.author.username }}
+              </a>
+              · {{ entry.created_at|date:"M d, Y" }}
+            </p>
+
+            {% if user.is_authenticated and user != entry.author %}
+              <button class="follow-button text-xs font-medium px-3 py-1 rounded-full transition
+                            {% if entry.author.profile in user.profile.following.all %}
+                              bg-red-100 text-red-600
+                            {% else %}
+                              bg-indigo-100 text-indigo-600
+                            {% endif %}"
+                      data-username="{{ entry.author.username }}">
+                {% if entry.author.profile in user.profile.following.all %}
+                  Unfollow
+                {% else %}
+                  Follow
+                {% endif %}
+              </button>
+            {% endif %}
+          </div>
+
+          <h3 class="text-xl font-bold text-[#726a60] mb-2">
+            <a href="{% url 'entry_detail' entry.id %}" class="hover:underline">
+              {{ entry.title }}
+            </a>
+          </h3>
+          <p class="text-[#6a5748] mb-3 line-clamp-3 whitespace-pre-wrap">{{ entry.content }}</p>
+
+          {% if entry.emotions.exists %}
+            <div class="flex flex-wrap gap-2 text-xs mt-2">
+              {% for emo in entry.emotions.all %}
+                <span class="bg-white/30 text-[#6a5748] px-2 py-1 rounded-full font-medium backdrop-blur-sm border">
+                  #{{ emo.name }}
+                </span>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <button class="like-button mt-4 text-sm px-3 py-1 rounded-full border transition
+                  {% if user in entry.likes.all %}
+                    bg-[#ede6fb] text-[#6c5ecf] border-[#e0d4f7]
+                  {% else %}
+                    bg-[#f1edf9] text-[#cab8e5] border-[#e5def7]
+                  {% endif %}"
+                  data-entry-id="{{ entry.id }}">
+            {% if user in entry.likes.all %}
+              ♥ {{ entry.likes.count }}
+            {% else %}
+              ♡ {{ entry.likes.count }}
+            {% endif %}
+          </button>
+        </div>
+      {% endwith %}
+    {% empty %}
+      <p class="text-center text-gray-500">No entries yet. Start writing your first!</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block ajax_logic %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // LIKE AJAX
+  document.querySelectorAll(".like-button").forEach(button => {
+    button.addEventListener("click", function(e) {
+      e.preventDefault();
+      const entryId = this.dataset.entryId;
+      fetch(`/like-ajax/${entryId}/`, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": getCookie("csrftoken"),
+          "Content-Type": "application/json"
+        },
+        credentials: "same-origin",
+      })
+      .then(res => res.json())
+      .then(data => {
+        this.className = "like-button mt-4 text-sm px-3 py-1 rounded-full border transition";
+
+        if (data.liked) {
+          this.classList.add("bg-[#ede6fb]", "text-[#6c5ecf]", "border-[#e0d4f7]");
+          this.innerHTML = `♥ ${data.likes_count}`;
+        } else {
+          this.classList.add("bg-[#f1edf9]", "text-[#cab8e5]", "border-[#e5def7]");
+          this.innerHTML = `♡ ${data.likes_count}`;
+        }
+      });
+
+    });
+  });
+
+  // FOLLOW AJAX
+  document.querySelectorAll(".follow-button").forEach(button => {
+    button.addEventListener("click", function(e) {
+      e.preventDefault();
+      const username = this.dataset.username;
+      fetch(`/follow-ajax/${username}/`, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": getCookie("csrftoken"),
+          "Content-Type": "application/json"
+        },
+        credentials: "same-origin",
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.is_following) {
+          this.innerText = "Unfollow";
+          this.classList.remove("bg-indigo-100", "text-indigo-600");
+          this.classList.add("bg-red-100", "text-red-600");
+        } else {
+          this.innerText = "Follow";
+          this.classList.remove("bg-red-100", "text-red-600");
+          this.classList.add("bg-indigo-100", "text-indigo-600");
+        }
+      });
+    });
+  });
+
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(";").shift();
+  }
+});
+</script>
+{% endblock %}
+
+
+

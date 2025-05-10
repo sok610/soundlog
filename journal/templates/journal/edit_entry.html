@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="max-w-xl mx-auto py-12 px-4">
+  <h2 class="text-3xl font-bold mb-6 text-center text-[#6c5ecf]">Edit Your Entry</h2>
+
+  <form method="post" class="space-y-6 bg-[#f5f0fb] p-6 rounded-2xl shadow-lg border border-indigo-100">
+    {% csrf_token %}
+
+    <!-- Title -->
+    <div>
+      <label for="id_title" class="block text-sm font-semibold text-[#726a60] mb-1">Title</label>
+      {% render_field form.title class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" %}
+    </div>
+
+    <!-- Content -->
+    <div>
+      <label for="id_content" class="block text-sm font-semibold text-[#726a60] mb-1">Content</label>
+      {% render_field form.content rows="8" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-300" %}
+    </div>
+
+    <!-- Emotion Selection -->
+    <div>
+      <p class="text-sm font-semibold text-[#726a60] mb-2">How are you feeling?</p>
+      <div id="emotion-buttons" class="flex flex-wrap gap-2">
+        {% for emotion in emotions %}
+          <button
+            type="button"
+            class="emotion-btn px-4 py-1 rounded-full border border-gray-300 text-sm transition
+              {% if emotion.id in selected_emotion_ids %} selected {% endif %}"
+            data-id="{{ emotion.id }}"
+            data-color="{{ emotion.color }}"
+          >
+            {{ emotion.name }}
+          </button>
+        {% endfor %}
+      </div>
+      <div id="selected-emotions">
+        {% for emotion_id in selected_emotion_ids %}
+          <input type="hidden" name="emotions" value="{{ emotion_id }}">
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="text-center">
+      <button type="submit" class="bg-[#6c5ecf] hover:bg-indigo-700 text-white px-6 py-2 rounded-full font-semibold shadow-md transition transform hover:scale-105">
+        Save Changes
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Emotion Button Styling -->
+<style>
+  .emotion-btn {
+    background-color: #f3f4f6;
+    color: #4b5563;
+  }
+
+  .emotion-btn.selected {
+    color: #111827;
+  }
+</style>
+{% endblock %}
+
+{% block ajax_logic %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const emotionButtons = document.querySelectorAll(".emotion-btn");
+    const hiddenContainer = document.getElementById("selected-emotions");
+    const selectedIds = new Set(
+      [...document.querySelectorAll('input[name="emotions"]')].map(input => input.value)
+    );
+
+    emotionButtons.forEach((btn) => {
+      const id = btn.dataset.id;
+      const color = btn.dataset.color;
+
+      // 초기 스타일 설정
+      if (selectedIds.has(id)) {
+        btn.classList.add("selected");
+        btn.style.backgroundColor = color;
+      }
+
+      btn.addEventListener("click", () => {
+        if (selectedIds.has(id)) {
+          selectedIds.delete(id);
+          btn.classList.remove("selected");
+          btn.style.backgroundColor = "#f3f4f6";
+        } else {
+          selectedIds.add(id);
+          btn.classList.add("selected");
+          btn.style.backgroundColor = color;
+        }
+
+        // hidden input 업데이트
+        hiddenContainer.innerHTML = "";
+        selectedIds.forEach((id) => {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = "emotions";
+          input.value = id;
+          hiddenContainer.appendChild(input);
+        });
+      });
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-xl mx-auto mt-8 p-6 bg-[#f5f0fb] shadow rounded-2xl">
+  <h2 class="text-2xl font-bold mb-4 text-[#6c5ecf]">@{{ target_user.username }}'s Following</h2>
+
+  {% if following %}
+    <ul class="space-y-2">
+      {% for user in following %}
+        <li>
+          <a href="{% url 'user_profile' user.username %}" class="text-[#bfa7f2] hover:text-[#a88fe8] font-medium">
+            @{{ user.username }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-[#726a60]">Not following anyone yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

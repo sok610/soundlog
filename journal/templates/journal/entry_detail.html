@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-[#f5f0fb] p-6 rounded-2xl shadow-lg">
+  <!-- 글 본문 -->
+  <h2 class="text-2xl font-bold mb-4 text-[#6c5ecf]">{{ entry.title }}</h2>
+  <p class="mb-4 whitespace-pre-wrap text-[#5e4b3c]">{{ entry.content }}</p>
+
+  <hr class="my-6 border-[#e0d4f7]">
+
+  <!-- 댓글 목록 -->
+  <h3 class="text-xl font-semibold mb-3 text-[#faf7fd]">Comments</h3>
+  {% for comment in comments %}
+    <div class="mb-4 border border-[#dacbed] rounded-lg p-3 bg-white">
+      <!-- 작성자 -->
+      <p class="text-sm font-semibold text-[#bfa7f2] mb-1">
+        @{{ comment.author.username }}
+      </p>
+
+      <!-- 댓글 내용 -->
+      <p class="text-sm text-[#5e4b3c] whitespace-normal mb-1">
+        {{ comment.content|linebreaksbr }}
+      </p>
+
+      <!-- 추천곡 -->
+      {% if comment.song_title %}
+        <p class="text-sm text-[#bfa7f2] mb-1">
+          🎵 
+          <a href="{{ comment.song_url }}" target="_blank" class="underline hover:text-[#a88fe8]">
+            {{ comment.song_title }}
+          </a>
+        </p>
+      {% endif %}
+
+      <!-- 작성일 -->
+      <p class="text-xs text-[#6c5ecf]">
+        {{ comment.created_at|date:"M d, Y H:i" }}
+      </p>
+    </div>
+  {% empty %}
+    <p class="text-[#5e4b3c]">No comments yet.</p>
+  {% endfor %}
+
+  <hr class="my-6 border-[#e0d4f7]">
+
+  <!-- 댓글 폼 -->
+  {% if user.is_authenticated %}
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+
+    <div>
+      <label for="id_content" class="block text-sm font-semibold text-[#726a60] mb-1">Leave a comment</label>
+      {% render_field form.content rows="3" class="w-full rounded-xl border-gray-300 shadow-sm focus:outline-none focus:ring focus:ring-[#cdb4db]" %}
+    </div>
+
+    {% render_field form.song_title type="hidden" %}
+    {% render_field form.song_url type="hidden" %}
+
+    <!-- 음악 추천 토글 -->
+    <button type="button" id="toggle-music" class="text-sm text-[#bfa7f2] hover:text-[#a88fe8] hover:underline">
+      🎵 Share Music
+    </button>
+
+    <!-- 음악 검색 박스 -->
+    <div id="music-search-box" class="mt-2 hidden">
+      <input type="text" id="music-search-input"
+             class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+             placeholder="Search by song title or artist">
+      <div id="music-results" class="mt-2 space-y-1 text-sm"></div>
+    </div>
+
+    <div>
+      <button type="submit" class="bg-[#6c5ecf] hover:bg-[#5948b3] text-white px-5 py-2 rounded-full font-semibold shadow transition">
+        Submit Comment
+      </button>
+    </div>
+  </form>
+  {% else %}
+    <p class="text-sm text-gray-500">You must be logged in to comment.</p>
+  {% endif %}
+
+  <!-- 댓글 폼 리셋 스크립트 -->
+  <script>
+    window.addEventListener("pageshow", function(event) {
+      if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward") {
+        const textarea = document.querySelector("#id_content");
+        if (textarea) {
+          textarea.value = "";
+        }
+      }
+    });
+  </script>
+</div>
+{% endblock %}
+
+{% block ajax_logic %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const toggleButton = document.getElementById("toggle-music");
+  const searchBox = document.getElementById("music-search-box");
+  const searchInput = document.getElementById("music-search-input");
+  const resultsBox = document.getElementById("music-results");
+
+  const songTitleField = document.getElementById("id_song_title");
+  const songUrlField = document.getElementById("id_song_url");
+
+  toggleButton.addEventListener("click", function () {
+    searchBox.classList.toggle("hidden");
+    resultsBox.innerHTML = "";
+    searchInput.value = "";
+  });
+
+  searchInput.addEventListener("input", function () {
+    const query = searchInput.value.trim();
+    if (!query) {
+      resultsBox.innerHTML = "";
+      return;
+    }
+
+    fetch(`/search-music/?q=${encodeURIComponent(query)}`)
+    .then(res => res.json())
+    .then(data => {
+      resultsBox.innerHTML = "";
+      const tracks = data.tracks;
+
+      if (tracks.length === 0) {
+        resultsBox.innerHTML = "<p class='text-gray-500'>No results found.</p>";
+        return;
+      }
+
+      tracks.forEach(track => {
+        const resultItem = document.createElement("div");
+        resultItem.className = "cursor-pointer hover:bg-indigo-50 px-2 py-1 rounded-md";
+        resultItem.textContent = `${track.name} - ${track.artist}`;
+        resultItem.addEventListener("click", () => {
+          songTitleField.value = `${track.name} - ${track.artist}`;
+          songUrlField.value = track.url;
+          toggleButton.innerHTML = `🎵 Sharing: ${track.name} - ${track.artist}`;
+          searchBox.classList.add("hidden");
+          resultsBox.innerHTML = "";
+          searchInput.value = "";
+        });
+        resultsBox.appendChild(resultItem);
+      });
+    });
+  });
+});
+</script>
+{% endblock %}

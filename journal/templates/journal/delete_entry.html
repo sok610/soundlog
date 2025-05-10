@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-xl mx-auto mt-10 p-6 bg-[#fff7f0] border border-[#f4d8cd] rounded-2xl shadow text-center">
+
+  <h2 class="text-xl font-semibold text-[#5e4b3c] mb-4">Are you sure you want to delete this entry?</h2>
+  <p class="text-sm text-gray-600 mb-6">This action cannot be undone.</p>
+
+  <form method="POST">
+    {% csrf_token %}
+    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl">
+      Delete
+    </button>
+    <a href="{% url 'user_profile' request.user.username %}" class="ml-4 text-gray-500 hover:underline">
+      Cancel
+    </a>
+  </form>
+
+</div>
+{% endblock %}
