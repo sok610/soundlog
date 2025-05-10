@@ -1,4 +1,4 @@
-{% load static tailwind_tags %}
+{% load static %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -6,7 +6,9 @@
   <title>Soundlog</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  {% tailwind_css %}
+
+  <!-- ✅ Tailwind 빌드된 CSS 직접 링크 -->
+  <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
 </head>
 
 <body class="bg-gradient-to-b from-sky-100 via-teal-50 to-white text-[#5e4b3c] font-serif tracking-wide leading-relaxed min-h-screen">
