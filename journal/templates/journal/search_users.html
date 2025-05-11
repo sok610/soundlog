@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-xl mx-auto p-6">
+
+  <!-- Search Bar -->
+  <form method="get" class="mb-6">
+    <input type="text" name="q" placeholder="Search users..." value="{{ query }}"
+           class="w-full border border-[#dacbed] rounded-xl px-4 py-2 shadow-sm focus:outline-none focus:ring focus:ring-[#cdb4db] text-[#5e4b3c] font-serif">
+  </form>
+
+  <!-- Search Results -->
+  {% if results %}
+    <ul class="space-y-4">
+      {% for user in results %}
+        <li class="bg-[#f9f7fb] border border-[#dacbed] rounded-lg p-3 shadow-sm">
+          <p class="text-sm font-semibold text-[#bfa7f2] mb-1">
+            @{{ user.username }}
+          </p>
+          <a href="{% url 'user_profile' user.username %}" 
+             class="text-sm text-[#6c5ecf] hover:underline font-medium">
+            View Profile →
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% elif query %}
+    <p class="text-[#5e4b3c]">No users found for "{{ query }}".</p>
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -20,14 +20,20 @@ urlpatterns = [
     path("write/", views.write_entry, name="write_entry"),
 
     # Social Interaction
-    path("follow/<str:username>/", views.toggle_follow, name="toggle_follow"),
     path("user/<str:username>/", views.user_profile, name="user_profile"),
     path("user/<str:username>/following/", views.following_list, name="following_list"),
     path("user/<str:username>/followers/", views.followers_list, name="followers_list"),
+
+    # Spotify-related functions
+    path("search-music/", views.search_music, name="search_music"),
+    path("search-users/", views.search_users, name="search_users"),
+
+    # UI
+    path("follow/<str:username>/", views.toggle_follow, name="toggle_follow"),
     path("like/<int:entry_id>/", views.toggle_like, name="toggle_like"),
     path("like-ajax/<int:entry_id>/", views.toggle_like_ajax, name='toggle_like_ajax'),
     path("follow-ajax/<str:username>/", views.toggle_follow_ajax, name="toggle_follow_ajax"),
-    path("search-music/", views.search_music, name="search_music"),
+
 
     # Entry Functionalities
     path("entry/<int:entry_id>/", views.entry_detail, name="entry_detail"),

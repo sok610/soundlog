@@ -44,7 +44,7 @@
                "style="background-color: {{ bg_color }};"
              {% endwith %}
            {% else %}
-             bg-[#fff7f0]
+             bg-[#f9f7fb]
            {% endif %}">
         <p class="text-[#5e4b3c] whitespace-pre-wrap">{{ entry.content }}</p>
         <p class="text-xs mt-1 text-[#6c5ecf]">{{ entry.created_at|date:"M d, Y" }}</p>
@@ -60,7 +60,7 @@
         {% endif %}
       </div>
     {% empty %}
-      <p class="text-gray-400">No entries yet.</p>
+      <p class="text-[#5e4b3c]">No entries yet.</p>
     {% endfor %}
   </div>
 

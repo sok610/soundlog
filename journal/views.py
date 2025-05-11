@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
+from django.db.models import Q
 from .forms import JournalEntryForm, CommentForm
 from django.contrib.auth import login
 from .forms import CustomUserCreationForm
@@ -252,7 +253,23 @@ def search_music(request):
         results.append({
             "name": item["name"],
             "artist": ", ".join(artist["name"] for artist in item["artists"]),
-            "url": item["external_urls"]["spotify"]
+            "url": item["external_urls"]["spotify"],
         })
     
     return JsonResponse({"tracks": results})
+
+def search_users(request):
+    query = request.GET.get('q', '')
+    results = []
+
+    if query:
+        results = User.objects.filter(
+            Q(username__icontains=query) |
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query)
+        ).exclude(id=request.user.id)
+    
+    return render(request, 'journal/search_users.html', {
+        'query': query,
+        'results': results
+    })
