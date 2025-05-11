@@ -5,6 +5,8 @@
  * https://unpkg.com/browse/tailwindcss@latest/stubs/defaultConfig.stub.js
  */
 
+const plugin = require('tailwindcss/plugin')
+
 module.exports = {
     content: [
         /**
@@ -42,7 +44,11 @@ module.exports = {
         // '../../**/*.py'
     ],
     theme: {
-        extend: {},
+        extend: {
+            fontFamily: {
+                serif: ['SeoulHangangKR', 'Georgia', 'serif'],
+            }
+        },
     },
     plugins: [
         /**
@@ -54,5 +60,19 @@ module.exports = {
         require('@tailwindcss/typography'),
         require('@tailwindcss/line-clamp'),
         require('@tailwindcss/aspect-ratio'),
+
+        plugin(function({ addBase }) {
+            addBase({
+                '@font-face': {
+                    fontFamily: 'SeoulHangangKR',
+                    src: "url('/static/fonts/SeoulHangangM.ttf') format('truetype')",
+                    unicodeRange: 'U+AC00-D7AF, U+1100-11FF',
+                },
+                'body': {
+                    fontFamily: "'SeoulHangangKR', Georgia, serif",
+                }
+            })
+        })
+
     ],
 }
