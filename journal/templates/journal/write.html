@@ -25,20 +25,14 @@
       <p class="text-sm font-semibold text-[#726a60] mb-2">How are you feeling?</p>
       <div id="emotion-buttons" class="flex flex-wrap gap-2">
         {% for emotion in emotions %}
+          {% comment %} 기본 회색 배경, 선택 시 JS로 색상 변경 {% endcomment %}
           <button
             type="button"
             class="emotion-btn px-4 py-1 rounded-full border border-gray-300 text-sm transition"
             data-id="{{ emotion.id }}"
             data-color="{{ emotion.color }}"
-            style="background-color:
-              {% if emotion.name == 'Joy' %}#fae3a0
-              {% elif emotion.name == 'Sadness' %}#bcd4f6
-              {% elif emotion.name == 'Anger' %}#f8ccc0
-              {% elif emotion.name == 'Surprise' %}#fcdde4
-              {% elif emotion.name == 'Anticipation' %}#d1edea
-              {% else %}#f3f4f6
-              {% endif %};
-              color: #4b5563;"
+            data-default-color="#f3f4f6"
+            style="background-color: #f3f4f6; color: #4b5563;"
           >
             {{ emotion.name }}
           </button>
@@ -67,26 +61,28 @@
     emotionButtons.forEach((btn) => {
       const id = btn.dataset.id;
       const color = btn.dataset.color;
+      const defaultColor = btn.dataset.defaultColor || "#f3f4f6";
 
       btn.addEventListener("click", () => {
-        if (selectedIds.has(id)) {
+        const isSelected = selectedIds.has(id);
+
+        if (isSelected) {
           selectedIds.delete(id);
-          btn.classList.remove("selected");
-          btn.style.backgroundColor = btn.dataset.defaultColor || "#f3f4f6";
+          btn.style.backgroundColor = defaultColor;
           btn.style.color = "#4b5563";
         } else {
           selectedIds.add(id);
-          btn.classList.add("selected");
           btn.style.backgroundColor = color;
           btn.style.color = "#111827";
         }
 
+        // 업데이트된 감정 ID를 hidden input으로 생성
         hiddenContainer.innerHTML = "";
-        selectedIds.forEach((id) => {
+        selectedIds.forEach((emotionId) => {
           const input = document.createElement("input");
           input.type = "hidden";
           input.name = "emotions";
-          input.value = id;
+          input.value = emotionId;
           hiddenContainer.appendChild(input);
         });
       });

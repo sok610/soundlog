@@ -1,0 +1,13 @@
+databases:
+  - name: soundlog-db
+    plan: free
+    databaseName: soundlog_db
+    user: soundlog_db_user
+
+services:
+  - type: web
+    plan: free
+    name: soundlog
+    runtime: python
+    buildCommand: './build.sh'
+    startCommand: 'python -m gunicorn mysite.asgi:application -k uvicorn.workers.UvicornWorker' 
