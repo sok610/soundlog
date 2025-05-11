@@ -30,9 +30,9 @@
             {% if user.is_authenticated and user != entry.author %}
               <button class="follow-button text-xs font-medium px-3 py-1 rounded-full transition
                             {% if entry.author.profile in user.profile.following.all %}
-                              bg-red-100 text-red-600
+                              bg-[#f1edf9] text-[#cab8e5] border-[#e5def7]
                             {% else %}
-                              bg-indigo-100 text-indigo-600
+                              bg-[#ede6fb] text-[#6c5ecf] border-[#e0d4f7]
                             {% endif %}"
                       data-username="{{ entry.author.username }}">
                 {% if entry.author.profile in user.profile.following.all %}
