@@ -132,12 +132,12 @@ document.addEventListener("DOMContentLoaded", () => {
       .then(data => {
         if (data.is_following) {
           this.innerText = "Unfollow";
-          this.classList.remove("bg-indigo-100", "text-indigo-600");
-          this.classList.add("bg-red-100", "text-red-600");
+          this.classList.remove("bg-[#ede6fb]", "text-[#6c5ecf]", "border-[#e0d4f7]");
+          this.classList.add("bg-[#f1edf9]", "text-[#cab8e5]", "border-[#e5def7]");
         } else {
           this.innerText = "Follow";
-          this.classList.remove("bg-red-100", "text-red-600");
-          this.classList.add("bg-indigo-100", "text-indigo-600");
+          this.classList.remove("bg-[#f1edf9]", "text-[#cab8e5]", "border-[#e5def7]");
+          this.classList.add("bg-[#ede6fb]", "text-[#6c5ecf]", "border-[#e0d4f7]");
         }
       });
     });
