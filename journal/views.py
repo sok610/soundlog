@@ -199,6 +199,7 @@ def entry_detail(request, entry_id):
 @login_required
 def edit_entry(request, entry_id):
     entry = get_object_or_404(JournalEntry, id=entry_id, author=request.user)
+    
     if request.method == "POST":
         form = JournalEntryForm(request.POST, instance=entry)
         if form.is_valid():
@@ -211,7 +212,6 @@ def edit_entry(request, entry_id):
             selected_emotions = Emotion.objects.filter(id__in=selected_emotion_ids)
             entry.emotions.set(selected_emotions)
 
-            form.save()
             return redirect('user_profile', username=request.user.username)
     else:
         form = JournalEntryForm(instance=entry)

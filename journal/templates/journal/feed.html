@@ -34,8 +34,15 @@
             </a>
           </h3>
           <p class="text-[#6a5748] mb-3 line-clamp-3 whitespace-pre-wrap">{{ entry.content }}</p>
-
-          {% if entry.emotions.exists %}
+          
+          {% if entry.song_title %}
+            <div class="text-xs mt-2">
+              <a href="{{ entry.song_url }}" target="_blank" rel="noopener noreferrer"
+                class="inline-block bg-white/30 text-[#6a5748] px-2 py-1 rounded-full font-medium backdrop-blur-sm border hover:underline">
+                #{{ entry.song_title }}
+              </a>
+            </div>
+          {% elif entry.emotions.exists %}
             <div class="flex flex-wrap gap-2 text-xs mt-2">
               {% for emo in entry.emotions.all %}
                 <span class="bg-white/30 text-[#6a5748] px-2 py-1 rounded-full font-medium backdrop-blur-sm border">

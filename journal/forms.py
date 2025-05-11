@@ -6,7 +6,11 @@ from django.contrib.auth.models import User
 class JournalEntryForm(forms.ModelForm):
     class Meta:
         model = JournalEntry
-        fields = ['title', 'content', 'hashtags', 'emotions']
+        fields = ['title', 'content', 'hashtags', 'emotions', 'song_title', 'song_url', 'lyric_snippet']
+        widgets = {
+            'song_title': forms.HiddenInput(),
+            'song_url': forms.HiddenInput(),
+        }
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta:

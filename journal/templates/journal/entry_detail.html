@@ -4,9 +4,34 @@
 
 {% block content %}
 <div class="max-w-2xl mx-auto bg-[#f5f0fb] p-6 rounded-2xl shadow-lg">
-  <!-- 글 본문 -->
+  <!-- Content -->
   <h2 class="text-2xl font-bold mb-4 text-[#6c5ecf]">{{ entry.title }}</h2>
   <p class="mb-4 whitespace-pre-wrap text-[#5e4b3c]">{{ entry.content }}</p>
+
+  <!-- Is a song was Shared -->
+  {% if entry.song_url %}
+    <div class="mt-6">
+      <p class="text-sm text-[#bfa7f2] mb-1 font-medium">
+        🎵 {{ entry.song_title }}
+      </p>
+
+      <!-- Embedded Player for Journal -->
+      <iframe style="border-radius:12px"
+        src="https://open.spotify.com/embed/track/{{ entry.song_url|extract_track_id }}?utm_source=generator&theme=1"
+        width="100%" height="80" frameBorder="0" allowfullscreen
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        lading="lazy">
+      </iframe>
+
+      <!-- Lyric Snippet -->
+      {% if entry.lyric_snippet %}
+        <p class="mt-4 text-sm italic text-[#5e4b3c] text-center">
+          “{{ entry.lyric_snippet }}”
+        </p>
+      {% endif %}
+
+    </div>
+  {% endif %}
 
   <hr class="my-6 border-[#e0d4f7]">
 
@@ -24,19 +49,14 @@
         {{ comment.content|linebreaksbr }}
       </p>
 
-      <!-- Embedded Player-->
+      <!-- Embedded Player for Comment -->
       {% if comment.song_url %}
         <div class="mt-2">
           <p class="text-sm text-[#bfa7f2] mb-1 font-medium">
-            🎵 {{ comment.song_title }}
+            🎵 <a href="{{ comment.song_url }}" target="_blank" rel="noopener noreferrer" class="underline hover:text-[#a88fe8]">
+              {{ comment.song_title }}
+            </a>
           </p>
-    
-          <iframe style="border-radius:12px"
-            src="https://open.spotify.com/embed/track/{{ comment.song_url|extract_track_id }}?utm_source=generator&theme=1"
-            width="100%" height="80" frameBorder="0" allowfullscreen
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy">
-          </iframe>
         </div>
       {% endif %}
 

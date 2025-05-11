@@ -19,6 +19,11 @@ class JournalEntry(models.Model):
     likes = models.ManyToManyField(User, related_name="liked_entries", blank=True)
     emotions = models.ManyToManyField(Emotion, blank=True, related_name='entries')
 
+    # music-related fields
+    song_title = models.CharField(max_length=200, blank=True)
+    song_url = models.URLField(blank=True)
+    lyric_snippet = models.TextField(blank=True)
+
     def __str__(self):
         return f"{self.title} by {self.author.username}"
     
