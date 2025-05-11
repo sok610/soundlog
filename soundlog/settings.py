@@ -157,7 +157,7 @@ if not DEBUG:
     
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-STATICFILES_DIRS = [ BASE_DIR / 'theme' / 'static' / 'css' / 'dist' ]
+STATICFILES_DIRS = [ BASE_DIR / 'theme' / 'static' ]
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
