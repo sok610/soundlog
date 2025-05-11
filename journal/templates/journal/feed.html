@@ -26,22 +26,6 @@
               </a>
               · {{ entry.created_at|date:"M d, Y" }}
             </p>
-
-            {% if user.is_authenticated and user != entry.author %}
-              <button class="follow-button text-xs font-medium px-3 py-1 rounded-full transition
-                            {% if entry.author.profile in user.profile.following.all %}
-                              bg-[#f1edf9] text-[#cab8e5] border-[#e5def7]
-                            {% else %}
-                              bg-[#ede6fb] text-[#6c5ecf] border-[#e0d4f7]
-                            {% endif %}"
-                      data-username="{{ entry.author.username }}">
-                {% if entry.author.profile in user.profile.following.all %}
-                  Unfollow
-                {% else %}
-                  Follow
-                {% endif %}
-              </button>
-            {% endif %}
           </div>
 
           <h3 class="text-xl font-bold text-[#726a60] mb-2">
