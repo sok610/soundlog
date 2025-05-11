@@ -749,18 +749,6 @@ select {
   outline: 1px auto -webkit-focus-ring-color;
 }
 
-@font-face {
-  font-family: SeoulHangangKR;
-
-  src: url('/static/fonts/SeoulHangangM.ttf') format('truetype');
-
-  unicode-range: U+AC00-D7AF, U+1100-11FF;
-}
-
-body {
-  font-family: 'SeoulHangangKR', Georgia, serif;
-}
-
 .container {
   width: 100%;
 }
@@ -1404,13 +1392,15 @@ body {
 }
 
 @font-face {
-  font-family: 'SeoulHangang';
+  font-family: 'SeoulHangangKR';
 
-  src: url('static/fonts/SeoulHangangM.ttf') format('truetype');
+  src: url('../../fonts/SeoulHangangM.ttf') format('truetype');
+
+  unicode-range: U+AC00-D7AF, U+1100-11FF;
 }
 
 body {
-  font-family: 'SeoulHangang', serif;
+  font-family: 'SeoulHangang', 'Georgia', serif;
 }
 
 .hover\:scale-105:hover {
