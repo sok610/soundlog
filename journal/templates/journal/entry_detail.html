@@ -26,7 +26,7 @@
       <!-- Lyric Snippet -->
       {% if entry.lyric_snippet %}
         <p class="mt-4 text-sm italic text-[#5e4b3c] text-center">
-          “{{ entry.lyric_snippet }}”
+          “{{ entry.lyric_snippet|linebreaksbr}}”
         </p>
       {% endif %}
 
