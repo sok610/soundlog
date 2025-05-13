@@ -90,7 +90,7 @@
         <!-- Embedded Player for Comments -->
         {% if comment.song_url %}
           <iframe style="border-radius:12px"
-            src="https://open.spotify.com/embed/track/{{ entry.song_url|extract_track_id }}?utm_source=generator&theme=1"
+            src="https://open.spotify.com/embed/track/{{ comment.song_url|extract_track_id }}?utm_source=generator&theme=1"
             width="100%" height="80" frameBorder="0" allowfullscreen
             allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
             lading="lazy">
