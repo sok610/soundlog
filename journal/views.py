@@ -2,11 +2,12 @@ from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.views.decorators.cache import never_cache
 from .forms import JournalEntryForm, CommentForm
 from django.contrib.auth import login
 from .forms import CustomUserCreationForm
 from django.contrib.auth.decorators import login_required
-from .models import JournalEntry, Profile, Comment, Emotion
+from .models import JournalEntry, Profile, Comment, Emotion, Notification
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from .utils.spotify import SpotifyTokenManager
@@ -152,6 +153,16 @@ def toggle_like_ajax(request, entry_id):
     else:
         entry.likes.add(request.user)
         liked = True
+
+        # Create notification
+        if entry.author != request.user:
+            Notification.objects.create(
+                recipient=entry.author,
+                sender=request.user,
+                entry = entry,
+                type="like",
+                message=f"{request.user} liked your journal."
+            )
     
     return JsonResponse({
         "liked": liked,
@@ -177,24 +188,54 @@ def toggle_follow_ajax(request, username):
 
 def entry_detail(request, entry_id):
     entry = get_object_or_404(JournalEntry, id=entry_id)
-    comments = entry.comments.order_by("-created_at")
+    comments = entry.comments.order_by("created_at")
 
-    if request.method == "POST":
-        form = CommentForm(request.POST)
+    edit_comment_id = request.GET.get("edit_comment")
+    delete_comment_id = request.GET.get("delete_comment")
+    edit_comment_instance = None
+
+    if edit_comment_id:
+        edit_comment_instance = get_object_or_404(Comment, id=edit_comment_id, author=request.user, entry=entry)
+
+    if delete_comment_id and request.method == "POST":
+        comment_to_delete = get_object_or_404(Comment, id=delete_comment_id, author=request.user, entry=entry)
+        comment_to_delete.delete()
+        return redirect("entry_detail", entry_id=entry.id)
+
+    if request.method == "POST" and not delete_comment_id:
+        form = CommentForm(request.POST, instance=edit_comment_instance)  # 🔑 핵심 수정
         if form.is_valid():
             comment = form.save(commit=False)
             comment.entry = entry
             comment.author = request.user
             comment.save()
+
+            # 수정이 아닌 새 댓글이라면 알림 생성
+            if not edit_comment_instance and request.user != entry.author:
+                Notification.objects.create(
+                    recipient=entry.author,
+                    sender=request.user,
+                    comment=comment,
+                    entry=entry,
+                    type="comment",
+                    message=f"{request.user} commented on your journal."
+                )
+
             return redirect("entry_detail", entry_id=entry.id)
+
     else:
-        form = CommentForm()
+        form = CommentForm(instance=edit_comment_instance) if edit_comment_instance else CommentForm()
 
     return render(request, "journal/entry_detail.html", {
         "entry": entry,
         "comments": comments,
-        "form": form
+        "comments_count": comments.count(),
+        "form": form,
+        "edit_comment_id": int(edit_comment_id) if edit_comment_id else None,
+        "delete_comment_id": int(delete_comment_id) if delete_comment_id else None,
     })
+
+
 
 @login_required
 def edit_entry(request, entry_id):
@@ -273,3 +314,45 @@ def search_users(request):
         'query': query,
         'results': results
     })
+
+@never_cache
+@login_required
+def notification_list(request):
+    notifications = request.user.notifications.order_by("-created_at")
+    return render(request, 'journal/notification/list.html', {
+        'notifications': notifications,
+    })
+
+def mark_notification_as_read(request, pk):
+    notification = get_object_or_404(Notification, pk=pk, recipient=request.user)
+    notification.is_read = True
+    notification.save()
+
+    if notification.comment:
+        return redirect("entry_detail", entry_id=notification.entry.id)
+    elif notification.entry:
+        return redirect("entry_detail", entry_id=notification.entry.id)
+    else:
+        redirect("home")
+
+    return redirect('entry_detail', entry_id=notification.entry.id if notification.entry else "home")
+
+@login_required
+def edit_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id, author=request.user)
+    if request.method == 'POST':
+        form = CommentForm(request.POST, instance=comment)
+        if form.is_valid():
+            form.save()
+            return redirect('entry_detail', entry_id=comment.entry.id)
+    else:
+        form = CommentForm(instance=comment)
+    return render(request, 'journal/edit_comment.html', {'form': form}, {'comment': comment})
+
+@login_required
+def delete_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id, author=request.user)
+    if request.method == 'POST':
+        comment.delete()
+        return redirect('entry_detail', entry_id=comment.entry.id)
+    return render(request, 'journal/edit_comment.html',{'comment': comment})

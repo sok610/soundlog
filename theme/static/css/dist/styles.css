@@ -787,6 +787,10 @@ select {
   position: static;
 }
 
+.relative {
+  position: relative;
+}
+
 .mx-auto {
   margin-left: auto;
   margin-right: auto;
@@ -862,6 +866,10 @@ select {
   margin-top: 2rem;
 }
 
+.ml-1 {
+  margin-left: 0.25rem;
+}
+
 .line-clamp-3 {
   overflow: hidden;
   display: -webkit-box;
@@ -875,6 +883,10 @@ select {
 
 .inline-block {
   display: inline-block;
+}
+
+.inline {
+  display: inline;
 }
 
 .flex {
@@ -933,12 +945,20 @@ select {
   list-style-type: disc;
 }
 
+.flex-row {
+  flex-direction: row;
+}
+
 .flex-col {
   flex-direction: column;
 }
 
 .flex-wrap {
   flex-wrap: wrap;
+}
+
+.items-start {
+  align-items: flex-start;
 }
 
 .items-center {
@@ -993,6 +1013,12 @@ select {
   --tw-space-y-reverse: 0;
   margin-top: calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));
   margin-bottom: calc(1.5rem * var(--tw-space-y-reverse));
+}
+
+.space-x-2 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 0;
+  margin-right: calc(0.5rem * var(--tw-space-x-reverse));
+  margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
 }
 
 .whitespace-normal {
@@ -1139,6 +1165,11 @@ select {
   background-color: rgb(255 255 255 / 0.3);
 }
 
+.bg-\[\#e0d4f7\] {
+  --tw-bg-opacity: 1;
+  background-color: rgb(224 212 247 / var(--tw-bg-opacity, 1));
+}
+
 .p-3 {
   padding: 0.75rem;
 }
@@ -1211,6 +1242,11 @@ select {
   padding-bottom: 2rem;
 }
 
+.py-0\.5 {
+  padding-top: 0.125rem;
+  padding-bottom: 0.125rem;
+}
+
 .pl-5 {
   padding-left: 1.25rem;
 }
@@ -1220,7 +1256,7 @@ select {
 }
 
 .font-serif {
-  font-family: SeoulHangangKR, Georgia, serif;
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 }
 
 .text-2xl {
@@ -1384,6 +1420,12 @@ select {
   transition-duration: 150ms;
 }
 
+.transition-colors {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
 .line-clamp-3 {
   overflow: hidden;
   display: -webkit-box;
@@ -1391,22 +1433,15 @@ select {
   -webkit-line-clamp: 3;
 }
 
-@font-face {
-  font-family: 'SeoulHangangKR';
-
-  src: url('../../fonts/SeoulHangangM.ttf') format('truetype');
-
-  unicode-range: U+AC00-D7AF, U+1100-11FF;
-}
-
-body {
-  font-family: 'SeoulHangang', 'Georgia', serif;
-}
-
 .hover\:scale-105:hover {
   --tw-scale-x: 1.05;
   --tw-scale-y: 1.05;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+
+.hover\:border-\[\#e0d4f7\]:hover {
+  --tw-border-opacity: 1;
+  border-color: rgb(224 212 247 / var(--tw-border-opacity, 1));
 }
 
 .hover\:bg-\[\#5948b3\]:hover {
@@ -1417,6 +1452,11 @@ body {
 .hover\:bg-\[\#a88fe8\]:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(168 143 232 / var(--tw-bg-opacity, 1));
+}
+
+.hover\:bg-\[\#ede6fb\]:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(237 230 251 / var(--tw-bg-opacity, 1));
 }
 
 .hover\:bg-indigo-50:hover {
@@ -1442,6 +1482,11 @@ body {
 .hover\:text-\[\#5c5047\]:hover {
   --tw-text-opacity: 1;
   color: rgb(92 80 71 / var(--tw-text-opacity, 1));
+}
+
+.hover\:text-\[\#6c5ecf\]:hover {
+  --tw-text-opacity: 1;
+  color: rgb(108 94 207 / var(--tw-text-opacity, 1));
 }
 
 .hover\:text-\[\#a88fe8\]:hover {
@@ -1490,3 +1535,4 @@ body {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(165 180 252 / var(--tw-ring-opacity, 1));
 }
+

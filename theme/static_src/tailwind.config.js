@@ -42,11 +42,7 @@ module.exports = {
         // '../../**/*.py'
     ],
     theme: {
-        extend: {
-            fontFamily: {
-                serif: ['SeoulHangangKR', 'Georgia', 'serif'],
-            }
-        },
+        extend: {},
     },
     plugins: [
         /**

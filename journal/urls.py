@@ -23,6 +23,10 @@ urlpatterns = [
     path("user/<str:username>/", views.user_profile, name="user_profile"),
     path("user/<str:username>/following/", views.following_list, name="following_list"),
     path("user/<str:username>/followers/", views.followers_list, name="followers_list"),
+    path("notifications/", views.notification_list, name="notification_list"),
+    path("notifications/<int:pk>/read/", views.mark_notification_as_read, name='mark_notification_as_read'),
+    path("comments/<int:comment_id>/edit/", views.edit_comment, name="edit_comment"),
+    path("comments/<int:comment_id>/delete/", views.delete_comment, name="delete_comment"),
 
     # Spotify-related functions
     path("search-music/", views.search_music, name="search_music"),

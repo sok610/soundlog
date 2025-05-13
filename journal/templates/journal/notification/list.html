@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto p-6 bg-[#f5f0fb] rounded-2xl shadow-lg">
+  <h2 class="text-2xl font-bold mb-4 text-[#6c5ecf]">Notifications</h2>
+
+  {% if notifications %}
+    <ul class="space-y-4">
+      {% for note in notifications %}
+        <li class="bg-[#f9f7fb] border border-[#dacbed] rounded-lg p-3 shadow-sm">
+          <p class="text-sm font-semibold text-[#bfa7f2] mb-1">
+            @{{ note.sender.username }}
+          </p>
+          <a href="{% url 'mark_notification_as_read' note.id %}" class="text-sm {% if not note.is_read %}font-semibold{% endif %} text-[#726a60] hover:text-[#5c5047] transition-colors">
+            {{ note.message }}
+          </a>
+          <p class="text-xs text-[#6c5ecf] mt-1">
+            {{ note.created_at|timesince }} ago
+          </p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-[#5e4b3c]">You have no notifications yet.</p>
+  {% endif %}
+</div>
+{% endblock %}
+
+<script>
+  window.addEventListener('pageshow', function (event) {
+    if (event.persisted || performance.getEntriesByType('navigation')[0]?.type === 'back_forward') {
+      window.location.reload();
+    }
+  });
+</script>

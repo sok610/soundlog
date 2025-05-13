@@ -7,8 +7,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- ✅ Link Static Tailwind styles.css -->
-  <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
+  <!-- Link Static Tailwind styles.css -->
+  <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}?v=20250513">
 </head>
 
 <body class="bg-sky-100 text-[#5e4b3c] font-serif tracking-wide leading-relaxed min-h-screen">
@@ -30,6 +30,15 @@
         <a href="{% url 'search_users' %}"
            class="text-sm text-[#726a60] hover:text-[#5c5047]">
            Search Friends
+        </a>
+
+        <a href="{% url 'notification_list' %}" class="relative text-[#726a60] hover:text-[#5c5047]">
+          Notifications
+          {% if unread_notification_count > 0 %}
+            <span class="ml-1 inline-block text-xs bg-[#e0d4f7] text-[#6c5ecf] font-semibold px-2 py-0.5 rounded-full">
+              {{ unread_notification_count }}
+            </span>
+          {% endif %}
         </a>
 
         <a href="{% url 'logout' %}" class="text-sm text-[#6c5ecf] hover:text-[#5948b3]">Logout</a>
