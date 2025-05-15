@@ -52,6 +52,7 @@ Users can share their moods, discover songs that resonate with them, and interac
 4. Add .env file with your credentials:
 
    DEBUG=True
+   
    SPOTIFY_CLIENT_ID=your_client_id
    SPOTIFY_CLIENT_SECRET=your_client_secret
    ALLOWED_HOSTS=localhost,127.0.0.1
