@@ -4,3 +4,4 @@ __pycache__/
 .env
 .venv
 /staticfiles/
+.DS_Store
