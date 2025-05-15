@@ -50,12 +50,13 @@ Users can share their moods, discover songs that resonate with them, and interac
 3. Install dependencies:
    pip install -r requirements.txt
 4. Add .env file with your credentials:
+
    DEBUG=True
    SPOTIFY_CLIENT_ID=your_client_id
    SPOTIFY_CLIENT_SECRET=your_client_secret
    ALLOWED_HOSTS=localhost,127.0.0.1
    USE_SQLITE3=True
-5. Run migrations and start the server:
+6. Run migrations and start the server:
    python manage.py migrate
    python manage.py runserver
 
