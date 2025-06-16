@@ -186,10 +186,10 @@ USE_RENDER = os.getenv("USE_RENDER")
 USE_S3 = os.getenv("USE_S3")
 
 # Setting for Render Deployment
-if not DEBUG and USE_RENDER:
+'''if not DEBUG and USE_RENDER:
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
     
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'*/'''
 
 STATICFILES_DIRS = [ BASE_DIR / 'theme' / 'static' ]
 
