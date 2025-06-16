@@ -36,29 +36,23 @@
 
   <!-- Journal Entry List -->
   <div>
-    <h3 class="text-lg font-bold mb-3 text-[#726a60]">My Logs</h3>
+    <h3 class="text-lg font-bold mb-3 text-[#726a60]">Logs</h3>
     {% for entry in entries %}
-      <div class="mb-4 p-4 rounded shadow-sm border
-           {% if entry.emotions.all %}
-             {% with entry.emotions.first.color as bg_color %}
-               "style="background-color: {{ bg_color }};"
-             {% endwith %}
-           {% else %}
-             bg-[#f9f7fb]
-           {% endif %}">
+      <a href="{% url 'entry_detail' entry.id %}"
+        class="block mb-4 p-4 rounded shadow-sm border transition
+          hover:shadow-md hover:scale-[1.01] duration-150
+          {% if entry.emotions.all %}
+            {% with entry.emotions.first.color as bg_color %}
+              "style="background-color: {{ bg_color }};"
+            {% endwith %}
+          {% else %}
+            bg-[#f9f7fb]
+          {% endif %}">
+        
         <p class="text-[#5e4b3c] whitespace-pre-wrap">{{ entry.content }}</p>
         <p class="text-xs mt-1 text-[#6c5ecf]">{{ entry.created_at|date:"M d, Y" }}</p>
 
-        {% if request.user == entry.author %}
-          <div class="mt-2 flex gap-4 text-sm">
-            <a href="{% url 'edit_entry' entry.id %}" class="text-[#726a60] hover:text-[#5c5047] font-medium">Edit</a>
-            <form method="POST" action="{% url 'delete_entry' entry.id %}" onsubmit="return confirm('Do you really want to delete this entry?')">
-              {% csrf_token %}
-              <button type="submit" class="text-[#e76f51] hover:text-[#d1543b] font-medium">Delete</button>
-            </form>
-          </div>
-        {% endif %}
-      </div>
+      </a>
     {% empty %}
       <p class="text-[#5e4b3c]">No entries yet.</p>
     {% endfor %}

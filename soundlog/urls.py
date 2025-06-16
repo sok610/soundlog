@@ -16,6 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path("__reload__/", include("django_browser_reload.urls")),
@@ -24,3 +26,6 @@ urlpatterns = [
     # home은 이제 theme 대신 journal에서 처리
     path("", include("journal.urls")),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

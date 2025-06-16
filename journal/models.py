@@ -15,6 +15,7 @@ class JournalEntry(models.Model):
     title = models.CharField(max_length=100)
     content = models.TextField()
     hashtags = models.CharField(max_length=200, blank=True)
+    image = models.ImageField(upload_to='entry_images/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     likes = models.ManyToManyField(User, related_name="liked_entries", blank=True)
     emotions = models.ManyToManyField(Emotion, blank=True, related_name='entries')

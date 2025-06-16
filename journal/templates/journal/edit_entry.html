@@ -5,7 +5,7 @@
 <div class="max-w-xl mx-auto py-12 px-4">
   <h2 class="text-3xl font-bold mb-6 text-center text-[#6c5ecf]">Edit Your Entry</h2>
 
-  <form method="post" class="space-y-6 bg-[#f5f0fb] p-6 rounded-2xl shadow-lg border border-indigo-100">
+  <form method="post" enctype="multipart/form-data" class="space-y-6 bg-[#f5f0fb] p-6 rounded-2xl shadow-lg border border-indigo-100">
     {% csrf_token %}
 
     <!-- Title -->
@@ -19,6 +19,30 @@
       <label for="id_content" class="block text-sm font-semibold text-[#726a60] mb-1">Content</label>
       {% render_field form.content rows="8" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-300" %}
     </div>
+
+    {% if form.instance.image %}
+      <div class="mb-4">
+        <p class="text-sm text-[#726a60] mb-1 font-medium">Current Image</p>
+        <img src="{{ form.instance.image.url }}" alt="Current image"
+            class="rounded-xl max-h-60 w-auto shadow mb-2" />
+
+        <!-- Custom Clear checkbox -->
+        <label class="inline-flex items-center space-x-2 text-sm text-[#5e4b3c]">
+          <input type="checkbox" name="image-clear" id="id_image-clear"
+                class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+          <span>Remove Image</span>
+        </label>
+      </div>
+    {% endif %}
+
+    <!-- File Upload Field -->
+    <div class="mt-4">
+      <label for="id_image" class="block text-sm font-semibold text-[#726a60] mb-1">Change Image</label>
+      {% render_field form.image %}
+    </div>
+
+
+    
 
     <!-- Emotion Selection -->
     <div>

@@ -5,9 +5,21 @@
 {% block content %}
 
 <div class="max-w-2xl mx-auto bg-[#f5f0fb] p-6 rounded-2xl shadow-lg">
-  <!-- Content -->
+  <!-- Title -->
   <h2 class="text-2xl font-bold mb-4 text-[#6c5ecf]">{{ entry.title }}</h2>
+
+  <!-- Uploaded Image -->
+  {% if entry.image %}
+    <div class="mb-6">
+      <img src="{{ entry.image.url }}" alt="Uploaded Image" class="w-full h-auto rounded-lg shadow" /> 
+    </div>
+  {% endif %}
+
+
+  <!-- Content -->
   <p class="mb-4 whitespace-pre-wrap text-[#5e4b3c]">{{ entry.content }}</p>
+
+
 
   <!-- If a song was Shared -->
   {% if entry.song_url %}
@@ -34,27 +46,41 @@
   {% endif %}
 
   <hr class="my-6 border-[#e0d4f7]">
-
+  <!-- Like and Comment Buttons -->
   <div class="flex flex-row items-center gap-2 mt-4">
     <!-- Like Button for Journal Entry-->
-    <button id="like-button"
-            class="like-button text-sm px-3 py-1 rounded-full border transition
-            {% if user in entry.likes.all %}
-              bg-[#ede6fb] text-[#6c5ecf] border-[#e0d4f7]
-            {% else %}
-              bg-[#f1edf9] text-[#cab8e5] border-[#e5def7]
-            {% endif %}"
-            data-entry-id="{{ entry.id }}">
-      {% if user in entry.likes.all %}
-        ♥ <span id="like-count">{{ entry.likes.count }}</span>
-      {% else %}
-        ♡ <span id="like-count">{{ entry.likes.count }}</span>
-      {% endif %}
-    </button>
+    <div class="flex flex-row items-center gap-2">
+      <button id="like-button"
+              class="like-button text-sm px-3 py-1 rounded-full border transition
+              {% if user in entry.likes.all %}
+                bg-[#ede6fb] text-[#6c5ecf] border-[#e0d4f7]
+              {% else %}
+                bg-[#f1edf9] text-[#cab8e5] border-[#e5def7]
+              {% endif %}"
+              data-entry-id="{{ entry.id }}">
+        {% if user in entry.likes.all %}
+          ♥ <span id="like-count">{{ entry.likes.count }}</span>
+        {% else %}
+          ♡ <span id="like-count">{{ entry.likes.count }}</span>
+        {% endif %}
+      </button>
 
-    <button id="toggle-comment-button" class="text-sm px-3 py-1 rounded-full border bg-[#f1edf9] text-[#cab8e5] border-[#e5def7] transition hover:bg-[#ede6fb] hover:text-[#6c5ecf] hover:border-[#e0d4f7]">
-      ✏ {{ comments.count }}
-    </button>
+      <!-- Comment Button -->
+      <button id="toggle-comment-button" class="text-sm px-3 py-1 rounded-full border bg-[#f1edf9] text-[#cab8e5] border-[#e5def7] transition hover:bg-[#ede6fb] hover:text-[#6c5ecf] hover:border-[#e0d4f7]">
+        ✏ {{ comments.count }}
+      </button>
+    </div>
+
+    <!-- Edit and Delete Buttons for Owner -->
+    {% if request.user == entry.author %}
+      <div class="flex gap-3 text-sm ml-auto">
+        <a href="{% url 'edit_entry' entry.id %}" class="text-[#726a60] hover:text-[#5c5047] font-medium">Edit</a>
+        <form method="POST" action="{% url 'delete_entry' entry.id %}" onsubmit="return confirm('Do you really want to delete this entry?')">
+          {% csrf_token %}
+          <button type="submit" class="text-[#e76f51] hover:text-[#d1543b] font-medium">Delete</button>
+        </form>
+      </div>
+    {% endif %}
   </div>
 
   <div id="comment-section" class="mt-6 hidden {% if edit_comment_id or delete_comment_id %}{% else %}hidden{% endif %}">

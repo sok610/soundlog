@@ -40,7 +40,7 @@ def home(request):
 @login_required
 def write_entry(request):
     if request.method == "POST":
-        form = JournalEntryForm(request.POST)
+        form = JournalEntryForm(request.POST, request.FILES)
         if form.is_valid():
             entry = form.save(commit=False)
             entry.author = request.user
@@ -242,7 +242,7 @@ def edit_entry(request, entry_id):
     entry = get_object_or_404(JournalEntry, id=entry_id, author=request.user)
     
     if request.method == "POST":
-        form = JournalEntryForm(request.POST, instance=entry)
+        form = JournalEntryForm(request.POST, request.FILES, instance=entry)
         if form.is_valid():
             updated_entry = form.save(commit=False)
             updated_entry.author = request.user

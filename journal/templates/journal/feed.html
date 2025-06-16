@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto py-10 px-6">
+<div class="max-w-2xl mx-auto py-10 px-6">
   <div class="flex justify-between items-center mb-6">
     <h2 class="text-3xl font-serif font-bold text-[#bfa7f2] tracking-wide">
       Feed
@@ -15,7 +15,7 @@
   <div class="grid gap-6">
     {% for entry in entries %}
       {% with first_emotion=entry.emotions.first %}
-        <div class="border border-[#f1edf9] rounded-xl shadow-sm p-6 transition hover:shadow-md"
+        <div class="w-full max-w-2xl mx-auto border border-[#f1edf9] rounded-xl shadow-sm p-6 transition hover:shadow-md"
           style="background-color: {{ first_emotion.color|default:'#f9f7fb' }};">
 
           <div class="flex justify-between items-center mb-3">
@@ -28,11 +28,23 @@
             </p>
           </div>
 
+          <!-- Title -->
           <h3 class="text-xl font-bold text-[#726a60] mb-2">
             <a href="{% url 'entry_detail' entry.id %}" class="hover:underline">
               {{ entry.title }}
             </a>
           </h3>
+
+          <!-- Image -->
+          {% if entry.image %}
+            <div class="mb-4">
+              <img src="{{ entry.image.url }}"
+                  alt="Entry Image"
+                  class="w-112 h-112 object-cover rounded-lg shadow-sm" />
+            </div>
+          {% endif %}
+
+          <!-- Content -->
           <p class="text-[#6a5748] mb-3 line-clamp-3 whitespace-pre-wrap">{{ entry.content }}</p>
           
           {% if entry.song_title %}
