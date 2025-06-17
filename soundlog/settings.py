@@ -69,15 +69,15 @@ AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
 
 # Media
 MEDIA_LOCATION = 'media'
-MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{MEDIA_LOCATION}/'
+MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 STATIC_LOCATION = "static"
-STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{STATIC_LOCATION}/"
-STATICFILES_DIRS = [ BASE_DIR / 'theme' / 'static' ]
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
+#STATICFILES_DIRS = [ BASE_DIR / 'theme' / 'static' ]
+#STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 
 STORAGES = {
