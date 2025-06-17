@@ -60,7 +60,6 @@ INSTALLED_APPS = [
 
 # When Using S3 on Production Environment
 if USE_S3:
-    print("using s3")
     #AWS Keys
     AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -91,7 +90,6 @@ if USE_S3:
     }
 # When Not using S3; in Development Environment
 else:
-    print("not using s3")
     STATIC_URL = '/static/'
     STATICFILES_DIRS = [ BASE_DIR / 'theme' / 'static' ]
     STATIC_ROOT = BASE_DIR / 'staticfiles'
