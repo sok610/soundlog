@@ -85,10 +85,7 @@ STORAGES = {
         "BACKEND": "soundlog.storage_backends.MediaStorage",
     },
     "staticfiles": {
-        "BACKEND": "storages.backends.s3boto3.S3StaticStorage",
-        "OPTIONS": {
-            "location": "static",
-        }
+        "BACKEND": "soundlog.storage_backends.StaticStorage",
     }
 }
 
