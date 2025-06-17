@@ -21,7 +21,7 @@ load_dotenv()
 
 # Environment Variables
 USE_RENDER = os.getenv("USE_RENDER")
-USE_S3 = os.getenv("USE_S3")
+USE_S3 = os.getenv("USE_S3", "False").lower() == "true"
 
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
@@ -34,7 +34,7 @@ SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG') == 'True'
+DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS','localhost,127.0.0.1').split(',')
 
@@ -58,36 +58,49 @@ INSTALLED_APPS = [
 
 ]
 
-# AWS Keys
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
-AWS_S3_REGION_NAME = 'us-east-2'
-AWS_S3_FILE_OVERWRITE = False
-AWS_DEFAULT_ACL = None
-AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+# When Using S3 on Production Environment
+if USE_S3:
+    print("using s3")
+    #AWS Keys
+    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
+    AWS_S3_REGION_NAME = 'us-east-2'
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_DEFAULT_ACL = None
+    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
 
-# Media
-MEDIA_LOCATION = 'media'
-MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    # Media
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
-STATIC_LOCATION = "static"
-STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
-#STATICFILES_DIRS = [ BASE_DIR / 'theme' / 'static' ]
-#STATIC_ROOT = BASE_DIR / 'staticfiles'
+    # Static files (CSS, JavaScript, Images)
+    # https://docs.djangoproject.com/en/4.2/howto/static-files/
+    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
+    #STATICFILES_DIRS = [ BASE_DIR / 'theme' / 'static' ]
+    #STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 
-STORAGES = {
-    "default": {
-        "BACKEND": "soundlog.storage_backends.MediaStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "soundlog.storage_backends.StaticStorage",
+    STORAGES = {
+        "default": {
+            "BACKEND": "soundlog.storage_backends.MediaStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "soundlog.storage_backends.StaticStorage",
+        }
     }
-}
+# When Not using S3; in Development Environment
+else:
+    print("not using s3")
+    STATIC_URL = '/static/'
+    STATICFILES_DIRS = [ BASE_DIR / 'theme' / 'static' ]
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / "media"
+
+
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -191,9 +204,6 @@ USE_S3 = os.getenv("USE_S3")
     
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'*/'''
 
-STATICFILES_DIRS = [ BASE_DIR / 'theme' / 'static' ]
-
-STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
