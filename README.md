@@ -3,15 +3,15 @@
 **Soundlog** is a full-stack social journaling web application that lets users express emotions through journal entries and music.  
 Users can share their moods, discover songs that resonate with them, and interact with friends through comments, likes, and follows.
 
-🌐 [Live Demo](https://soundlog-clkk.onrender.com)
+🌐 [Live Demo](http://3.135.241.17/)
 
 ---
 
 ## ✨ Features
 
-- ✍️ Create journal entries with a title, content, emotion tag, and optional song
+- ✍️ Create journal entries with a title, content, emotion tag, image, and optional song with lyric snippets
 - 🎧 Search for songs via the Spotify API and embed a preview player
-- 💬 Comment on entries and optionally recommend songs with lyric snippets
+- 💬 Comment on entries and optionally recommend songs
 - ❤️ Like and 🔄 follow other users; both buttons work instantly via AJAX
 - 🎨 Journal background color changes based on the selected emotion
 - 🔍 Search for users and view profiles with their entries
@@ -33,7 +33,7 @@ Users can share their moods, discover songs that resonate with them, and interac
 
 **APIs & Tools:**
 - Spotify Web API
-- Render (deployment)
+- AWS EC2 + S3 + Gunicorn + Nginx (deployment)
 - GitHub (version control)
 
 ---
