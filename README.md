@@ -6,6 +6,18 @@ Users can share their moods, discover songs that resonate with them, and interac
 🌐 [Live Demo](http://3.135.241.17/)
 
 ---
+## ✨ Features
+
+- ✍️ Create journal entries with a title, content, emotion tag, image, and optional song with lyric snippets
+- 🎧 Search for songs via the Spotify API and embed a preview player
+- 💬 Comment on entries and optionally recommend songs
+- ❤️ Like and 🔄 follow other users; both buttons work instantly via AJAX
+- 🎨 Journal background color changes based on the selected emotion
+- 🔍 Search for users and view profiles with their entries
+- 🧾 Personal "My Page" where users can edit or delete only their own entries
+- 🔔 Notification system (in progress): see who followed you, commented, or liked your entry
+
+---
 ## 🎥 Demo Videos
 - Sign Up / Logout / Login
 
@@ -28,7 +40,7 @@ https://github.com/user-attachments/assets/c6150123-57a7-4596-ad54-b8f9515e698a
 
 https://github.com/user-attachments/assets/8c71a4a0-030a-43cd-8c3b-abcee125677b
 
-
+---
 ## ✨ Features
 
 - ✍️ Create journal entries with a title, content, emotion tag, image, and optional song with lyric snippets
