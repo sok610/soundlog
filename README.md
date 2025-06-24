@@ -6,6 +6,32 @@ Users can share their moods, discover songs that resonate with them, and interac
 🌐 [Live Demo](http://3.135.241.17/)
 
 ---
+## 🎥 Demo Videos
+- Sign Up / Logout / Login
+
+https://github.com/user-attachments/assets/4490532b-2f19-4041-a542-84bba7f4aaf9
+
+
+- Write a Journal Entry
+
+https://github.com/user-attachments/assets/aec6205b-3f7b-44eb-bfa7-4c421ad24ec8
+
+
+- Like and Comment on a Journal Entry
+
+https://github.com/user-attachments/assets/948c976c-637c-4a00-babe-13c230551b12
+
+
+- Check Notification
+
+https://github.com/user-attachments/assets/8c71a4a0-030a-43cd-8c3b-abcee125677b
+
+
+
+https://github.com/user-attachments/assets/c6150123-57a7-4596-ad54-b8f9515e698a
+
+
+
 
 ## ✨ Features
 
