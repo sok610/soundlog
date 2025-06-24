@@ -62,28 +62,6 @@ https://github.com/user-attachments/assets/8c71a4a0-030a-43cd-8c3b-abcee125677b
 
 ---
 
-## 🚀 Getting Started
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/soundlog.git
-   cd soundlog
-2. Create and activate a virtual environment:
-   python -m venv venv
-   source venv/bin/activate
-3. Install dependencies:
-   pip install -r requirements.txt
-4. Add .env file with your credentials:
-
-   DEBUG=True
-   SPOTIFY_CLIENT_ID=your_client_id
-   SPOTIFY_CLIENT_SECRET=your_client_secret
-   ALLOWED_HOSTS=localhost,127.0.0.1
-   USE_SQLITE3=True
-6. Run migrations and start the server:
-   python manage.py migrate
-   python manage.py runserver
-
 ## 📌 Roadmap
 
 - [x] User authentication (login, signup)
