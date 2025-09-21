@@ -54,7 +54,8 @@ INSTALLED_APPS = [
     'storages', # for AWS S3 bucket
     'tailwind',
     'theme',
-    'journal'
+    'journal',
+    'celery',
 
 ]
 
@@ -157,7 +158,11 @@ else:
         'PORT': '5432',
     }
 }
+    
 
+# CELERY related info
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
 
 

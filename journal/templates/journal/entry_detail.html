@@ -19,6 +19,14 @@
   <!-- Content -->
   <p class="mb-4 whitespace-pre-wrap text-[#5e4b3c]">{{ entry.content }}</p>
 
+  <div id="recommendations">
+    <button hx-get="{% url 'get_recommendations' entry.id %}" 
+            hx-trigger="load"
+            hx-target="#recommendations">
+      Loading recommendations...
+    </button>
+  </div>
+
 
 
   <!-- If a song was Shared -->

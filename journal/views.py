@@ -11,12 +11,42 @@ from .models import JournalEntry, Profile, Comment, Emotion, Notification
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from .utils.spotify import SpotifyTokenManager
+from .tasks import analyze_entry
 import requests
 
 spotify_token_manager = SpotifyTokenManager(
     settings.SPOTIFY_CLIENT_ID,
     settings.SPOTIFY_CLIENT_SECRET
 )
+
+EMOTION_QUERY_MAP = {
+    "joy": "happy upbeat",
+    "sadness": "sad acoustic",
+    "anger": "angry rock",
+    "surprise": "party edm",
+    "anticipation": "motivational",
+    "pride": "motivational pop",
+    "fear": "calm soothing",
+}
+
+EMOTION_FEATURES = {
+    "joy": {"min_valence": 0.6, "max_valence": 1.0, "min_energy": 0.5},
+    "sadness": {"max_valence": 0.4, "min_acousticness": 0.6},
+    "anger": {"min_energy": 0.7, "min_tempo": 100},
+    "anticipation": {"min_valence": 0.5, "min_energy": 0.5},
+    "surprise": {"min_valence": 0.4, "max_valence": 0.9, "min_danceability": 0.5},
+}
+
+
+EMOTION_GENRES = {
+    "joy": ["pop", "dance", "indie-pop"],
+    "sadness": ["acoustic", "piano", "chill"],
+    "anger": ["rock", "metal", "punk"],
+    "anticipation": ["hiphop", "pop", "edm"],
+    "surprise": ["electronic", "edm", "indie-pop"],
+}
+
+
 
 # Create your views here.
 def home(request):
@@ -48,6 +78,8 @@ def write_entry(request):
 
             emotion_ids = request.POST.getlist("emotions")
             entry.emotions.set(emotion_ids)
+
+            analyze_entry.delay(entry.id)
 
             return redirect("home")
     else:
@@ -356,3 +388,31 @@ def delete_comment(request, comment_id):
         comment.delete()
         return redirect('entry_detail', entry_id=comment.entry.id)
     return render(request, 'journal/edit_comment.html',{'comment': comment})
+
+
+@login_required
+def get_recommendations(request, entry_id):
+    entry = get_object_or_404(JournalEntry, id=entry_id)
+
+    keywords = entry.detected_keywords or []
+    query = " ".join(keywords) if keywords else entry.detected_emotion or "chill"
+
+    token = spotify_token_manager.get_token()
+    headers = {"Authorization": f"Bearer {token}"}
+    params = {"q": query, "type": "track", "limit": 5, "market": "US"}
+
+    response = requests.get("https://api.spotify.com/v1/search", headers=headers, params=params)
+
+    tracks = []
+    if response.status_code == 200:
+        items = response.json().get("tracks", {}).get("items", [])
+        for item in items:
+            tracks.append({
+                "name": item["name"],
+                "artist": ", ".join(a["name"] for a in item["artists"]),
+                "url": item["external_urls"]["spotify"],
+                "image": item["album"]["images"][1]["url"] if item["album"]["images"] else None,
+                "popularity": item.get("popularity", 0),
+            })
+
+    return render(request, "journal/_recommendations.html", {"tracks": tracks, "query": query})

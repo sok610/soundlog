@@ -31,6 +31,7 @@ urlpatterns = [
     # Spotify-related functions
     path("search-music/", views.search_music, name="search_music"),
     path("search-users/", views.search_users, name="search_users"),
+    path("entry/<int:entry_id>/recommendations/", views.get_recommendations, name="get_recommendations"),
 
     # UI
     path("follow/<str:username>/", views.toggle_follow, name="toggle_follow"),

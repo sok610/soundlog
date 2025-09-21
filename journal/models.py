@@ -6,7 +6,8 @@ class Emotion(models.Model):
     name = models.CharField(max_length=50)
     slug = models.SlugField(unique=True) # joy, sadness, etc.
     color = models.CharField(max_length=50, default="#f3f4f6") # background color
-
+    spotify_query = models.CharField(max_length=100, blank=True, null=True)
+    
     def __str__(self):
         return self.name
 
@@ -19,6 +20,10 @@ class JournalEntry(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     likes = models.ManyToManyField(User, related_name="liked_entries", blank=True)
     emotions = models.ManyToManyField(Emotion, blank=True, related_name='entries')
+
+    # emotion analysis related fields
+    detected_emotion = models.CharField(max_length=50, blank=True)  # ex: joy, sadness
+    detected_keywords = models.JSONField(default=list, blank=True)  # ["breakup", "loneliness", "hope"]
 
     # music-related fields
     song_title = models.CharField(max_length=200, blank=True)
