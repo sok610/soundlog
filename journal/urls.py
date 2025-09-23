@@ -39,9 +39,13 @@ urlpatterns = [
     path("like-ajax/<int:entry_id>/", views.toggle_like_ajax, name='toggle_like_ajax'),
     path("follow-ajax/<str:username>/", views.toggle_follow_ajax, name="toggle_follow_ajax"),
 
-
     # Entry Functionalities
     path("entry/<int:entry_id>/", views.entry_detail, name="entry_detail"),
     path('entry/<int:entry_id>/edit/', views.edit_entry, name='edit_entry'),
     path('entry/<int:entry_id>/delete/', views.delete_entry, name='delete_entry'),
+
+    # Daily Record
+    path('daily/add/', views.add_daily_record, name='add_daily_record'),
+    path('daily/<int:record_id>/', views.view_daily_record, name='view_daily_record'),
+
 ]

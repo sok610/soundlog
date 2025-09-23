@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="max-w-xl mx-auto py-12 px-4">
+  <h2 class="text-3xl font-bold mb-6 text-center text-[#6c5ecf]">Today's Song</h2>
+
+  <form method="post" enctype="multipart/form-data" class="space-y-6 bg-[#f5f0fb] p-6 rounded-2xl shadow-lg border border-indigo-100">
+    {% csrf_token %}
+
+    <!-- Spotify Search -->
+    <div>
+      <label for="spotify-query" class="block text-sm font-semibold text-[#726a60] mb-1">Search Song</label>
+      <input type="text" id="spotify-query"
+        class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+        placeholder="Search Spotify...">
+      <ul id="spotify-results" class="mt-2 space-y-1 text-sm"></ul>
+    </div>
+
+    <!-- Hidden fields for selected track -->
+    {% render_field form.song_id type="hidden" id="id_song_id" %}
+    {% render_field form.song_title type="hidden" id="id_song_title" %}
+    {% render_field form.artist type="hidden" id="id_artist" %}
+    {% render_field form.preview_url type="hidden" id="id_preview_url" %}
+
+    <!-- Photo -->
+    <div>
+      <label for="id_photo" class="block text-sm font-semibold text-[#726a60] mb-1">Photo</label>
+      {% render_field form.photo class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" %}
+    </div>
+
+    <!-- Location -->
+    <div>
+      <label for="id_location" class="block text-sm font-semibold text-[#726a60] mb-1">
+        Location
+      </label>
+      {% render_field form.location placeholder="Search for a place..." class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" %}
+
+    </div>
+
+    <!-- Emotions -->
+    <div>
+      <p class="text-sm font-semibold text-[#726a60] mb-2">How are you feeling?</p>
+      <div id="emotion-buttons" class="flex flex-wrap gap-2">
+        {% for emotion in emotions %}
+          <button
+            type="button"
+            class="emotion-btn px-4 py-1 rounded-full border border-gray-300 text-sm transition"
+            data-value="{{ emotion.name|lower }}"
+            data-color="{{ emotion.color }}"
+            data-default-color="#f3f4f6"
+            style="background-color: #f3f4f6; color: #4b5563;"
+          >
+            {{ emotion.name }}
+          </button>
+        {% endfor %}
+      </div>
+      <!-- Hidden input -->
+      <input type="hidden" name="emotion" id="id_emotion">
+    </div>
+
+    <!-- Submit -->
+    <div class="text-center">
+      <button type="submit"
+        class="bg-[#6c5ecf] hover:bg-indigo-700 text-white px-6 py-2 rounded-full font-semibold shadow-md transition transform hover:scale-105">
+        Save Record
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block ajax_logic %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Spotify Search
+    document.getElementById("spotify-query").addEventListener("input", function () {
+      const query = this.value;
+      if (query.length < 2) return;
+
+      fetch(`/search-music?q=${encodeURIComponent(query)}`)
+        .then(res => res.json())
+        .then(data => {
+          const results = document.getElementById("spotify-results");
+          results.innerHTML = "";
+          data.tracks.forEach(track => {
+            const li = document.createElement("li");
+            li.className = "cursor-pointer hover:bg-indigo-50 px-2 py-1 rounded-md";
+            li.textContent = `${track.name} - ${track.artist}`;
+            li.onclick = () => {
+              document.getElementById("id_song_id").value = track.id;
+              document.getElementById("id_song_title").value = track.name;
+              document.getElementById("id_artist").value = track.artist;
+              document.getElementById("id_preview_url").value = track.preview_url || "";
+
+              document.getElementById("spotify-query").value = `${track.name} - ${track.artist}`;
+              results.innerHTML = "";
+            };
+            results.appendChild(li);
+          });
+        });
+    });
+
+    // Emotion select
+    const emotionButtons = document.querySelectorAll(".emotion-btn");
+    const hiddenInput = document.getElementById("id_emotion");
+
+    emotionButtons.forEach((btn) => {
+      const value = btn.dataset.value;
+      const color = btn.dataset.color;
+      const defaultColor = btn.dataset.defaultColor;
+
+      btn.addEventListener("click", () => {
+        // reset all
+        emotionButtons.forEach(b => {
+          b.style.backgroundColor = b.dataset.defaultColor;
+          b.style.color = "#4b5563";
+        });
+
+        // set selected
+        btn.style.backgroundColor = color;
+        btn.style.color = "#111827";
+        hiddenInput.value = value;
+      });
+    });
+  });
+</script>
+
+<!-- Google Places API -->
+<script src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_MAPS_API_KEY }}&libraries=places"></script>
+<script>
+  function initAutocomplete() {
+    const input = document.getElementById("id_location");
+    const autocomplete = new google.maps.places.Autocomplete(input);
+
+    autocomplete.setFields(["formatted_address", "geometry", "name"]);
+
+    autocomplete.addListener("place_changed", function () {
+      const place = autocomplete.getPlace();
+      if (place.formatted_address) {
+        input.value = place.formatted_address;
+      } else if (place.name) {
+        input.value = place.name;
+      }
+    });
+  }
+  google.maps.event.addDomListener(window, "load", initAutocomplete);
+</script>
+
+
+{% endblock %}

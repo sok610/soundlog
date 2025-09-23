@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-xl mx-auto py-12 px-4">
+  <h2 class="text-2xl font-bold text-[#6c5ecf] mb-4">Today's Song</h2>
+  <p><strong>Song:</strong> {{ record.song_title }} - {{ record.artist }}</p>
+  <p><strong>Location:</strong> {{ record.location }}</p>
+  <p><strong>Emotion:</strong> {{ record.emotion }}</p>
+  {% if record.photo %}
+    <img src="{{ record.photo.url }}" class="mt-4 rounded-lg shadow-md">
+  {% endif %}
+  <p class="text-sm text-gray-500 mt-2">Saved on {{ record.created_at }}</p>
+</div>
+{% endblock %}

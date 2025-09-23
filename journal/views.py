@@ -3,31 +3,23 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.views.decorators.cache import never_cache
-from .forms import JournalEntryForm, CommentForm
+from .forms import JournalEntryForm, CommentForm, DailyRecordForm
 from django.contrib.auth import login
 from .forms import CustomUserCreationForm
 from django.contrib.auth.decorators import login_required
-from .models import JournalEntry, Profile, Comment, Emotion, Notification
+from .models import JournalEntry, Profile, Comment, Emotion, Notification, DailyRecord
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from .utils.spotify import SpotifyTokenManager
 from .tasks import analyze_entry
+from django.utils.timezone import now
 import requests
+import random
 
 spotify_token_manager = SpotifyTokenManager(
     settings.SPOTIFY_CLIENT_ID,
     settings.SPOTIFY_CLIENT_SECRET
 )
-
-EMOTION_QUERY_MAP = {
-    "joy": "happy upbeat",
-    "sadness": "sad acoustic",
-    "anger": "angry rock",
-    "surprise": "party edm",
-    "anticipation": "motivational",
-    "pride": "motivational pop",
-    "fear": "calm soothing",
-}
 
 EMOTION_FEATURES = {
     "joy": {"min_valence": 0.6, "max_valence": 1.0, "min_energy": 0.5},
@@ -312,7 +304,6 @@ def search_music(request):
         return JsonResponse({"tracks": []})
     
     token = spotify_token_manager.get_token()
-
     headers = {"Authorization": f"Bearer {token}"}
     params = {"q": query, "type": "track", "limit": 5}
     response = requests.get("https://api.spotify.com/v1/search", headers=headers, params=params)
@@ -324,12 +315,15 @@ def search_music(request):
     results = []
     for item in items:
         results.append({
+            "id": item["id"],
             "name": item["name"],
             "artist": ", ".join(artist["name"] for artist in item["artists"]),
+            "preview_url": item.get("preview_url"),
             "url": item["external_urls"]["spotify"],
         })
     
     return JsonResponse({"tracks": results})
+
 
 def search_users(request):
     query = request.GET.get('q', '')
@@ -399,20 +393,82 @@ def get_recommendations(request, entry_id):
 
     token = spotify_token_manager.get_token()
     headers = {"Authorization": f"Bearer {token}"}
-    params = {"q": query, "type": "track", "limit": 5, "market": "US"}
 
-    response = requests.get("https://api.spotify.com/v1/search", headers=headers, params=params)
+    playlist_search = requests.get(
+        "https://api.spotify.com/v1/search",
+        headers=headers,
+        params={"q": f"{query} playlist", "type": "playlist", "limit": 5, "market": "US"},
+    )
 
     tracks = []
-    if response.status_code == 200:
-        items = response.json().get("tracks", {}).get("items", [])
-        for item in items:
-            tracks.append({
-                "name": item["name"],
-                "artist": ", ".join(a["name"] for a in item["artists"]),
-                "url": item["external_urls"]["spotify"],
-                "image": item["album"]["images"][1]["url"] if item["album"]["images"] else None,
-                "popularity": item.get("popularity", 0),
-            })
+    if playlist_search.status_code == 200:
+        playlists = playlist_search.json().get("playlists", {}).get("items", [])
+        if playlists:
+            top_playlist_id = playlists[0]["id"]
+
+            track_response = requests.get(
+                f"https://api.spotify.com/v1/playlists/{top_playlist_id}/tracks",
+                headers=headers,
+                params={"market": "US"},
+            )
+
+            if track_response.status_code == 200:
+                all_tracks = [
+                    {
+                        "name": item["track"]["name"],
+                        "artist": ", ".join(
+                            a["name"] for a in (item["track"].get("artists") or []) if a.get("name")
+                        ),
+                        "url": item["track"]["external_urls"]["spotify"],
+                        "image": (
+                            item["track"]["album"]["images"][1]["url"]
+                            if item["track"].get("album") and item["track"]["album"]["images"]
+                            else None
+                        ),
+                        "popularity": item["track"].get("popularity", 0),
+                    }
+                    for item in track_response.json().get("items", [])
+                    if item.get("track") and item["track"].get("name")
+                ]
+
+
+                all_tracks.sort(key=lambda x: x["popularity"], reverse=True)
+                top_tracks = all_tracks[:20]
+                tracks = random.sample(top_tracks, k=min(5, len(top_tracks)))
 
     return render(request, "journal/_recommendations.html", {"tracks": tracks, "query": query})
+
+
+@login_required
+def add_daily_record(request):
+    today = now().date()
+    existing_record = DailyRecord.objects.filter(user=request.user, date=today).first()
+
+    if existing_record:
+        return redirect('view_daily_record', record_id=existing_record.id)
+
+    if request.method == 'POST':
+        form = DailyRecordForm(request.POST, request.FILES)
+        if form.is_valid():
+            daily_record = form.save(commit=False)
+            daily_record.user = request.user
+            daily_record.save()
+            return redirect('home')
+    else:
+        form = DailyRecordForm()
+
+    emotions = Emotion.objects.all()
+    return render(request, 'journal/add_daily_record.html', {
+        'form': form,
+        'emotions': emotions,
+        'GOOGLE_MAPS_API_KEY': settings.GOOGLE_MAPS_API_KEY
+    })
+
+
+@login_required
+def view_daily_record(request, record_id):
+    record = get_object_or_404(DailyRecord, id=record_id, user=request.user)
+    return render(request, 'journal/view_daily_record.html', {'record': record})
+
+
+

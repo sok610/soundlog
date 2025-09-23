@@ -1,49 +1,35 @@
 from celery import shared_task
-from transformers import pipeline
+from transformers import pipeline, AutoTokenizer
 from keybert import KeyBERT
-from .models import JournalEntry, Emotion
+from .models import JournalEntry
 
-sentiment_model = pipeline("text-classification", model="joeddav/distilbert-base-uncased-go-emotions-student")
-kw_model = KeyBERT()
+# ✅ 모델 & 토크나이저 로딩
+tokenizer = AutoTokenizer.from_pretrained("j-hartmann/emotion-english-distilroberta-base")
 classifier = pipeline(
     "text-classification",
     model="j-hartmann/emotion-english-distilroberta-base",
     top_k=None
 )
-
-
-EMOTION_CATEGORY_MAP = {
-    "joy": "joy",
-    "optimism": "joy",
-    "love": "joy",
-    "amusement": "joy",
-    "excitement": "anticipation",
-    "anticipation": "anticipation",
-    "pride": "anticipation",
-    "surprise": "surprise",
-    "fear": "surprise",
-    "sadness": "sadness",
-    "grief": "sadness",
-    "disappointment": "sadness",
-    "anger": "anger",
-    "disgust": "anger",
-    "annoyance": "anger",
-}
+kw_model = KeyBERT()
 
 @shared_task
 def analyze_entry(entry_id):
     entry = JournalEntry.objects.get(id=entry_id)
+    text = entry.content
 
-    results = classifier(entry.content)
+    # ✅ 토큰화 + truncate
+    tokens = tokenizer(text, truncation=True, max_length=512)
+    truncated_text = tokenizer.decode(tokens["input_ids"], skip_special_tokens=True)
+
+    # ✅ 감정 분석 (pipeline에는 string만 넘김!)
+    results = classifier(truncated_text)
     results = results[0]
     top = max(results, key=lambda x: x["score"])
     raw_label = top["label"].lower()
 
-    mapped_label = EMOTION_CATEGORY_MAP.get(raw_label, raw_label)
+    # ✅ 키워드 추출
+    keywords = [kw for kw, score in kw_model.extract_keywords(text, top_n=5)]
 
-    entry.detected_emotion = mapped_label
-    entry.save()
-
-    emotion_obj, _ = Emotion.objects.get_or_create(slug=mapped_label, defaults={"name": mapped_label.title()})
-    entry.emotions.set([emotion_obj])
-
+    entry.detected_emotion = raw_label
+    entry.detected_keywords = keywords
+    entry.save(update_fields=["detected_emotion", "detected_keywords"])

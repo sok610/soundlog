@@ -74,3 +74,32 @@ class Notification(models.Model):
 
 
 User.profile = property(lambda u: Profile.objects.get_or_create(user=u)[0])
+
+
+# journal/models.py
+from django.db import models
+from django.contrib.auth.models import User
+
+EMOTION_CHOICES = [
+    ('joy', 'Joy'),
+    ('sadness', 'Sadness'),
+    ('anger', 'Anger'),
+    ('surprise', 'Surprise'),
+    ('anticipation', 'Anticipation'),
+]
+
+class DailyRecord(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    date = models.DateField(auto_now_add=True, unique_for_date="user")  
+    song_id = models.CharField(max_length=100, null=True, blank=True)  # Spotify track id
+    song_title = models.CharField(max_length=255)
+    artist = models.CharField(max_length=255)
+    preview_url = models.URLField(null=True, blank=True)
+    location = models.CharField(max_length=255, null=True, blank=True)
+    photo = models.ImageField(upload_to="daily_photos/", null=True, blank=True)
+    emotion = models.CharField(max_length=20, choices=EMOTION_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.date} - {self.song_title}"
+

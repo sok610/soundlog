@@ -201,6 +201,10 @@ USE_TZ = True
 USE_RENDER = os.getenv("USE_RENDER")
 USE_S3 = os.getenv("USE_S3")
 
+
+# GCP Related Key
+GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+
 # Setting for Render Deployment
 '''if not DEBUG and USE_RENDER:
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
