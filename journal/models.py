@@ -90,16 +90,16 @@ EMOTION_CHOICES = [
 
 class DailyRecord(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    date = models.DateField(auto_now_add=True, unique_for_date="user")  
-    song_id = models.CharField(max_length=100, null=True, blank=True)  # Spotify track id
-    song_title = models.CharField(max_length=255)
-    artist = models.CharField(max_length=255)
-    preview_url = models.URLField(null=True, blank=True)
-    location = models.CharField(max_length=255, null=True, blank=True)
-    photo = models.ImageField(upload_to="daily_photos/", null=True, blank=True)
-    emotion = models.CharField(max_length=20, choices=EMOTION_CHOICES)
+    song_id = models.CharField(max_length=255, blank=True, null=True)
+    song_title = models.CharField(max_length=255, blank=True, null=True)
+    artist = models.CharField(max_length=255, blank=True, null=True)
+    preview_url = models.URLField(blank=True, null=True)
+    location = models.CharField(max_length=255, blank=True, null=True)
+    photo = models.ImageField(upload_to="daily_photos/", blank=True, null=True)
+    emotion = models.ForeignKey("Emotion", on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.date} - {self.song_title}"
+        return f"{self.user.username} - {self.created_at.date()}"
+
 

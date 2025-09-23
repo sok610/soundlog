@@ -13,8 +13,10 @@ from django.urls import reverse
 from .utils.spotify import SpotifyTokenManager
 from .tasks import analyze_entry
 from django.utils.timezone import now
+from datetime import date
 import requests
 import random
+import calendar
 
 spotify_token_manager = SpotifyTokenManager(
     settings.SPOTIFY_CLIENT_ID,
@@ -58,6 +60,37 @@ def home(request):
         return render(request, "journal/feed.html", {"entries": entries})
     else:
         return render(request, "journal/landing.html")
+
+    
+@login_required
+def mood_calendar(request):
+    today = now().date()
+    year, month = today.year, today.month
+
+    records = DailyRecord.objects.filter(
+        user=request.user,
+        created_at__year=year,
+        created_at__month=month
+    ).select_related("emotion") 
+
+    # 날짜별 감정 색상 매핑
+    record_map = {
+        r.created_at.day: r.emotion.color if r.emotion else "#f3f4f6"
+        for r in records
+    }
+
+    cal = calendar.Calendar(firstweekday=6)  # Sunday 시작
+    month_days = cal.itermonthdays(year, month)
+    calendar_days = [day if day != 0 else "" for day in month_days]
+
+    return render(request, "journal/mood_calendar.html", {
+        "calendar_days": calendar_days,
+        "record_map": record_map,
+        "month": month,
+        "year": year,
+    })
+
+
 
 @login_required
 def write_entry(request):
@@ -442,7 +475,10 @@ def get_recommendations(request, entry_id):
 @login_required
 def add_daily_record(request):
     today = now().date()
-    existing_record = DailyRecord.objects.filter(user=request.user, date=today).first()
+    existing_record = DailyRecord.objects.filter(
+        user=request.user,
+        created_at__date=today
+    ).first()
 
     if existing_record:
         return redirect('view_daily_record', record_id=existing_record.id)
@@ -454,6 +490,8 @@ def add_daily_record(request):
             daily_record.user = request.user
             daily_record.save()
             return redirect('home')
+        else:
+            print(form.errors)  # 🔥 터미널에 에러 출력
     else:
         form = DailyRecordForm()
 
