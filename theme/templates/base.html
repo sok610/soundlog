@@ -26,10 +26,16 @@
            @{{ user.username }}
         </a>
 
-        <a href="{% url 'add_daily_record' %}"
+        <a href="{% url 'view_today_song' %}"
             class="text-sm text-[#726a60] hover:text-[#5c5047]">
             Today's Song
         </a>
+
+        <a href="{% url 'mood_calendar' %}"
+           class="text-sm text-[#726a60] hover:text-[#5c5047]">
+            Mood Calendar
+        </a>
+
 
         <!-- Search Friends Button -->
         <a href="{% url 'search_users' %}"

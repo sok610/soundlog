@@ -9,6 +9,6 @@
   {% if record.photo %}
     <img src="{{ record.photo.url }}" class="mt-4 rounded-lg shadow-md">
   {% endif %}
-  <p class="text-sm text-gray-500 mt-2">Saved on {{ record.created_at }}</p>
+  <p class="text-sm text-gray-500 mt-2">Saved on {{ record.date }}</p>
 </div>
 {% endblock %}

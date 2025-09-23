@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load custom_tags %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto py-10 px-6">
+  <h2 class="text-2xl font-bold text-[#6c5ecf] mb-6 text-center">
+    Mood Calendar ({{ month }}/{{ year }})
+  </h2>
+
+  <div class="grid grid-cols-7 text-center font-semibold text-[#726a60] mb-2">
+    <div>Sun</div>
+    <div>Mon</div>
+    <div>Tue</div>
+    <div>Wed</div>
+    <div>Thu</div>
+    <div>Fri</div>
+    <div>Sat</div>
+  </div>
+
+  <div class="grid grid-cols-7 gap-1 w-full">
+    {% for day in calendar_days %}
+      {% if day == "" %}
+        <div class="h-12 w-full"></div>
+      {% else %}
+        <div
+          class="h-12 w-full border rounded-md flex items-center justify-center text-sm font-medium"
+          style="background-color: {{ record_map|get_item:day|default:'#ffffff' }}"
+        >
+          {{ day }}
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}
+

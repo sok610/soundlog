@@ -48,9 +48,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     # newly added apps
     'django_browser_reload', # package
     'widget_tweaks', # for better UI
+    'journal.templatetags',
     'storages', # for AWS S3 bucket
     'tailwind',
     'theme',
