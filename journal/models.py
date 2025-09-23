@@ -98,8 +98,12 @@ class DailyRecord(models.Model):
     photo = models.ImageField(upload_to="daily_photos/", blank=True, null=True)
     emotion = models.ForeignKey("Emotion", on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    date = models.DateField(null=True,blank=True)
+
+    class Meta:
+        unique_together = ('user', 'date')
 
     def __str__(self):
-        return f"{self.user.username} - {self.created_at.date()}"
+        return f"{self.user} - {self.date} - {self.song_title}"
 
 

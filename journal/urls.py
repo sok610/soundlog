@@ -47,6 +47,7 @@ urlpatterns = [
     # Daily Record
     path('daily/add/', views.add_daily_record, name='add_daily_record'),
     path('daily/<int:record_id>/', views.view_daily_record, name='view_daily_record'),
+    path("daily/today/", views.view_today_song, name="view_today_song"),
     path("calendar/", views.mood_calendar, name="mood_calendar"),
     path("calendar/<int:year>/<int:month>/", views.mood_calendar, name="mood_calendar_month"),
 

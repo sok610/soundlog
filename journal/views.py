@@ -11,6 +11,7 @@ from .models import JournalEntry, Profile, Comment, Emotion, Notification, Daily
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from .utils.spotify import SpotifyTokenManager
+from collections import defaultdict
 from .tasks import analyze_entry
 from django.utils.timezone import now
 from datetime import date
@@ -71,21 +72,23 @@ def mood_calendar(request):
         user=request.user,
         created_at__year=year,
         created_at__month=month
-    ).select_related("emotion") 
+    ).select_related("emotion")
 
-    # 날짜별 감정 색상 매핑
-    record_map = {
-        r.created_at.day: r.emotion.color if r.emotion else "#f3f4f6"
-        for r in records
-    }
+    # 날짜별 감정 색상 매핑 (리스트)
+    record_map = defaultdict(list)
+    for r in records:
+        if r.date:
+            record_map[r.date.day].append(r.emotion.color if r.emotion else "#f3f4f6")
 
-    cal = calendar.Calendar(firstweekday=6)  # Sunday 시작
+    day_color_map = {day: colors[0] for day, colors in record_map.items()}
+
+    cal = calendar.Calendar(firstweekday=6)
     month_days = cal.itermonthdays(year, month)
     calendar_days = [day if day != 0 else "" for day in month_days]
 
     return render(request, "journal/mood_calendar.html", {
         "calendar_days": calendar_days,
-        "record_map": record_map,
+        "record_map": day_color_map,
         "month": month,
         "year": year,
     })
@@ -477,7 +480,7 @@ def add_daily_record(request):
     today = now().date()
     existing_record = DailyRecord.objects.filter(
         user=request.user,
-        created_at__date=today
+        date=today
     ).first()
 
     if existing_record:
@@ -488,6 +491,7 @@ def add_daily_record(request):
         if form.is_valid():
             daily_record = form.save(commit=False)
             daily_record.user = request.user
+            daily_record.date = today
             daily_record.save()
             return redirect('home')
         else:
@@ -509,4 +513,14 @@ def view_daily_record(request, record_id):
     return render(request, 'journal/view_daily_record.html', {'record': record})
 
 
+@login_required
+def view_today_song(request):
+    today = now().date()
+    record = DailyRecord.objects.filter(user=request.user, date=today).first()
 
+    print(DailyRecord.objects.filter(user=request.user, date=today))
+
+    if record:
+        return render(request, "journal/view_daily_record.html", {"record": record})
+    else:
+        return redirect("add_daily_record")
