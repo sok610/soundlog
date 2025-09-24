@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from .models import JournalEntry, Profile, Comment, Emotion, Notification, DailyRecord
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
+from .constants import EMOTION_GENRES, EMOTION_FEATURES, DEFAULT_GENRES
 from .utils.spotify import SpotifyTokenManager
 from collections import defaultdict
 from .tasks import analyze_entry
@@ -18,30 +19,32 @@ from datetime import date
 import requests
 import random
 import calendar
+import time
+import logging
+from django.core.cache import cache
 
 spotify_token_manager = SpotifyTokenManager(
     settings.SPOTIFY_CLIENT_ID,
     settings.SPOTIFY_CLIENT_SECRET
 )
 
-EMOTION_FEATURES = {
-    "joy": {"min_valence": 0.6, "max_valence": 1.0, "min_energy": 0.5},
-    "sadness": {"max_valence": 0.4, "min_acousticness": 0.6},
-    "anger": {"min_energy": 0.7, "min_tempo": 100},
-    "anticipation": {"min_valence": 0.5, "min_energy": 0.5},
-    "surprise": {"min_valence": 0.4, "max_valence": 0.9, "min_danceability": 0.5},
-}
-
-
-EMOTION_GENRES = {
-    "joy": ["pop", "dance", "indie-pop"],
-    "sadness": ["acoustic", "piano", "chill"],
-    "anger": ["rock", "metal", "punk"],
-    "anticipation": ["hiphop", "pop", "edm"],
-    "surprise": ["electronic", "edm", "indie-pop"],
-}
-
-
+# Reuse HTTP connections and retry transient failures
+_session = requests.Session()
+try:
+    from urllib3.util.retry import Retry
+    from requests.adapters import HTTPAdapter
+    _retries = Retry(
+        total=3,
+        backoff_factor=0.3,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET"],
+        raise_on_status=False,
+    )
+    _adapter = HTTPAdapter(max_retries=_retries, pool_connections=10, pool_maxsize=10)
+    _session.mount("https://", _adapter)
+    _session.mount("http://", _adapter)
+except Exception:
+    pass
 
 # Create your views here.
 def home(request):
@@ -231,7 +234,7 @@ def toggle_like_ajax(request, entry_id):
 
 def toggle_follow_ajax(request, username):
     if not request.user.is_authenticated:
-        return JsonResponse({"error:", 'not_authenticated'}, status=403)
+        return JsonResponse({"error": 'not_authenticated'}, status=403)
     
     target_user = get_object_or_404(User, username=username)
     target_profile = target_user.profile
@@ -390,14 +393,10 @@ def mark_notification_as_read(request, pk):
     notification.is_read = True
     notification.save()
 
-    if notification.comment:
+    if notification.entry:
         return redirect("entry_detail", entry_id=notification.entry.id)
-    elif notification.entry:
-        return redirect("entry_detail", entry_id=notification.entry.id)
-    else:
-        redirect("home")
+    return redirect("home")
 
-    return redirect('entry_detail', entry_id=notification.entry.id if notification.entry else "home")
 
 @login_required
 def edit_comment(request, comment_id):
@@ -409,7 +408,7 @@ def edit_comment(request, comment_id):
             return redirect('entry_detail', entry_id=comment.entry.id)
     else:
         form = CommentForm(instance=comment)
-    return render(request, 'journal/edit_comment.html', {'form': form}, {'comment': comment})
+    return render(request, 'journal/edit_comment.html', {'form': form, 'comment': comment})
 
 @login_required
 def delete_comment(request, comment_id):
@@ -424,55 +423,186 @@ def delete_comment(request, comment_id):
 def get_recommendations(request, entry_id):
     entry = get_object_or_404(JournalEntry, id=entry_id)
 
-    keywords = entry.detected_keywords or []
-    query = " ".join(keywords) if keywords else entry.detected_emotion or "chill"
+    # Build seeds/targets
+    emotion = (entry.detected_emotion or "").lower().strip()
+    seed_genres = (EMOTION_GENRES.get(emotion) or DEFAULT_GENRES)[:3]
 
-    token = spotify_token_manager.get_token()
-    headers = {"Authorization": f"Bearer {token}"}
+    targets = EMOTION_FEATURES.get(emotion, {})
+    params = {
+        "seed_genres": ",".join(seed_genres),
+        "limit": 20,
+        "market": "US",  # optionally derive from user locale/profile
+        **targets,
+    }
 
-    playlist_search = requests.get(
-        "https://api.spotify.com/v1/search",
-        headers=headers,
-        params={"q": f"{query} playlist", "type": "playlist", "limit": 5, "market": "US"},
-    )
+    # Cache key (include entry, emotion, seeds, and targets signature)
+    targets_sig = ",".join(f"{k}={v}" for k, v in sorted(targets.items()))
+    cache_key = f"recs:v1:{entry_id}:{emotion}:{params['seed_genres']}:{targets_sig}"
+    cached = cache.get(cache_key)
+    if cached:
+        logging.getLogger(__name__).info(
+            "metric rec_cache hit=True seeds=%s", params['seed_genres']
+        )
+        return render(request, "journal/_recommendations.html", {"tracks": cached, "query": emotion or "mood"})
 
+    t0 = time.perf_counter()
+    err = None
     tracks = []
-    if playlist_search.status_code == 200:
-        playlists = playlist_search.json().get("playlists", {}).get("items", [])
-        if playlists:
-            top_playlist_id = playlists[0]["id"]
+    try:
+        token = spotify_token_manager.get_token()
+        headers = {"Authorization": f"Bearer {token}"}
 
-            track_response = requests.get(
-                f"https://api.spotify.com/v1/playlists/{top_playlist_id}/tracks",
+        resp = _session.get(
+            "https://api.spotify.com/v1/recommendations",
+            headers=headers,
+            params=params,
+            timeout=(3.05, 5),
+        )
+        if resp.status_code != 200:
+            err = f"recs_{resp.status_code}"
+        else:
+            items = resp.json().get("tracks", []) or []
+
+            # Normalize + enforce simple artist diversity
+            seen_artists = set()
+            normalized = []
+            for tr in items:
+                if not tr or not tr.get("name"):
+                    continue
+                artist_names = [a["name"] for a in (tr.get("artists") or []) if a.get("name")]
+                if not artist_names:
+                    continue
+                primary_artist = artist_names[0]
+                if primary_artist in seen_artists:
+                    continue
+                seen_artists.add(primary_artist)
+
+                images = (tr.get("album") or {}).get("images") or []
+                image = images[1]["url"] if len(images) > 1 else (images[0]["url"] if images else None)
+
+                normalized.append({
+                    "name": tr["name"],
+                    "artist": ", ".join(artist_names),
+                    "url": tr["external_urls"]["spotify"],
+                    "image": image,
+                    "popularity": tr.get("popularity", 0),
+                })
+
+                if len(normalized) >= 5:
+                    break
+
+            tracks = normalized
+
+            # Fallback if diversity filtered too much
+            if len(tracks) < 5 and items:
+                for tr in items:
+                    if len(tracks) >= 5:
+                        break
+                    if not tr or not tr.get("name"):
+                        continue
+                    artist_names = [a["name"] for a in (tr.get("artists") or []) if a.get("name")]
+                    images = (tr.get("album") or {}).get("images") or []
+                    image = images[1]["url"] if len(images) > 1 else (images[0]["url"] if images else None)
+                    tracks.append({
+                        "name": tr["name"],
+                        "artist": ", ".join(artist_names),
+                        "url": tr["external_urls"]["spotify"],
+                        "image": image,
+                        "popularity": tr.get("popularity", 0),
+                    })
+
+        # Retry once with relaxed params if we had an error or no tracks
+        if (err is not None) or (not tracks):
+            relaxed_params = {
+                "seed_genres": params["seed_genres"],
+                "limit": 20,
+                "market": params["market"],
+            }
+            resp2 = _session.get(
+                "https://api.spotify.com/v1/recommendations",
                 headers=headers,
-                params={"market": "US"},
+                params=relaxed_params,
+                timeout=(3.05, 5),
             )
+            if resp2.status_code == 200:
+                items2 = resp2.json().get("tracks", []) or []
+                if items2:
+                    err = None
+                    tracks = []
+                    seen_artists = set()
+                    for tr in items2:
+                        if len(tracks) >= 5:
+                            break
+                        if not tr or not tr.get("name"):
+                            continue
+                        artist_names = [a["name"] for a in (tr.get("artists") or []) if a.get("name")]
+                        if not artist_names:
+                            continue
+                        primary_artist = artist_names[0]
+                        if primary_artist in seen_artists:
+                            continue
+                        seen_artists.add(primary_artist)
+                        images = (tr.get("album") or {}).get("images") or []
+                        image = images[1]["url"] if len(images) > 1 else (images[0]["url"] if images else None)
+                        tracks.append({
+                            "name": tr["name"],
+                            "artist": ", ".join(artist_names),
+                            "url": tr["external_urls"]["spotify"],
+                            "image": image,
+                            "popularity": tr.get("popularity", 0),
+                        })
+            else:
+                err = err or f"recs_relaxed_{resp2.status_code}"
 
-            if track_response.status_code == 200:
-                all_tracks = [
-                    {
-                        "name": item["track"]["name"],
-                        "artist": ", ".join(
-                            a["name"] for a in (item["track"].get("artists") or []) if a.get("name")
-                        ),
-                        "url": item["track"]["external_urls"]["spotify"],
-                        "image": (
-                            item["track"]["album"]["images"][1]["url"]
-                            if item["track"].get("album") and item["track"]["album"]["images"]
-                            else None
-                        ),
-                        "popularity": item["track"].get("popularity", 0),
-                    }
-                    for item in track_response.json().get("items", [])
-                    if item.get("track") and item["track"].get("name")
-                ]
+        # Final fallback to old playlist flow if still empty
+        if not tracks:
+            search_resp = _session.get(
+                "https://api.spotify.com/v1/search",
+                headers=headers,
+                params={"q": f"{emotion or 'chill'} playlist", "type": "playlist", "limit": 5, "market": params["market"]},
+                timeout=(3.05, 5),
+            )
+            if search_resp.status_code == 200:
+                playlists = search_resp.json().get("playlists", {}).get("items", [])
+                if playlists:
+                    top_playlist_id = playlists[0]["id"]
+                    tr_resp = _session.get(
+                        f"https://api.spotify.com/v1/playlists/{top_playlist_id}/tracks",
+                        headers=headers,
+                        params={"market": params["market"]},
+                        timeout=(3.05, 5),
+                    )
+                    if tr_resp.status_code == 200:
+                        items3 = tr_resp.json().get("items", [])
+                        all_tracks = [
+                            {
+                                "name": it["track"]["name"],
+                                "artist": ", ".join(a["name"] for a in (it["track"].get("artists") or []) if a.get("name")),
+                                "url": it["track"]["external_urls"]["spotify"],
+                                "image": (
+                                    it["track"]["album"]["images"][1]["url"]
+                                    if it["track"].get("album") and it["track"]["album"].get("images")
+                                    else None
+                                ),
+                                "popularity": it["track"].get("popularity", 0),
+                            }
+                            for it in items3
+                            if it.get("track") and it["track"].get("name")
+                        ]
+                        all_tracks.sort(key=lambda x: x["popularity"], reverse=True)
+                        tracks = all_tracks[:5]
+    finally:
+        latency_ms = (time.perf_counter() - t0) * 1000
+        logging.getLogger(__name__).info(
+            "metric rec_view latency_ms=%.1f error=%s seeds=%s", latency_ms, err, ",".join(seed_genres)
+        )
 
+    # Cache the result
+    if tracks:
+        cache.set(cache_key, tracks, timeout=60 * 60 * 12)  # 12 hours
+        logging.getLogger(__name__).info("metric rec_cache hit=False seeds=%s", params['seed_genres'])
 
-                all_tracks.sort(key=lambda x: x["popularity"], reverse=True)
-                top_tracks = all_tracks[:20]
-                tracks = random.sample(top_tracks, k=min(5, len(top_tracks)))
-
-    return render(request, "journal/_recommendations.html", {"tracks": tracks, "query": query})
+    return render(request, "journal/_recommendations.html", {"tracks": tracks, "query": emotion or "mood"})
 
 
 @login_required
@@ -518,7 +648,6 @@ def view_today_song(request):
     today = now().date()
     record = DailyRecord.objects.filter(user=request.user, date=today).first()
 
-    print(DailyRecord.objects.filter(user=request.user, date=today))
 
     if record:
         return render(request, "journal/view_daily_record.html", {"record": record})

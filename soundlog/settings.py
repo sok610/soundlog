@@ -223,5 +223,28 @@ TAILWIND_APP_NAME = 'theme'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+# Console logging so journal.views metrics appear in terminal
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'journal': {  # covers journal.views (__name__ = 'journal.views')
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'journal.views': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
+
 
 
