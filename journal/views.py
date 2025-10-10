@@ -646,6 +646,27 @@ def view_daily_record(request, record_id):
 
 
 @login_required
+def edit_daily_record(request, record_id):
+    record = get_object_or_404(DailyRecord, id=record_id, user=request.user)
+    
+    if request.method == 'POST':
+        form = DailyRecordForm(request.POST, request.FILES, instance=record)
+        if form.is_valid():
+            form.save()
+            return redirect('view_daily_record', record_id=record.id)
+    else:
+        form = DailyRecordForm(instance=record)
+    
+    emotions = Emotion.objects.all()
+    return render(request, 'journal/edit_daily_record.html', {
+        'form': form,
+        'record': record,
+        'emotions': emotions,
+        'GOOGLE_MAPS_API_KEY': settings.GOOGLE_MAPS_API_KEY
+    })
+
+
+@login_required
 def view_today_song(request):
     today = now().date()
     record = DailyRecord.objects.filter(user=request.user, date=today).first()
@@ -655,8 +676,3 @@ def view_today_song(request):
         return render(request, "journal/view_daily_record.html", {"record": record})
     else:
         return redirect("add_daily_record")
-
-
-# Temporary view to test 500 error page (remove after testing)
-def test_500(request):
-    raise Exception("This is a test error to trigger 500 page")

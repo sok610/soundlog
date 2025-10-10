@@ -2,13 +2,38 @@
 
 {% block content %}
 <div class="max-w-xl mx-auto py-12 px-4">
-  <h2 class="text-2xl font-bold text-[#6c5ecf] mb-4">Today's Song</h2>
-  <p><strong>Song:</strong> {{ record.song_title }} - {{ record.artist }}</p>
-  <p><strong>Location:</strong> {{ record.location }}</p>
-  <p><strong>Emotion:</strong> {{ record.emotion }}</p>
-  {% if record.photo %}
-    <img src="{{ record.photo.url }}" class="mt-4 rounded-lg shadow-md">
-  {% endif %}
-  <p class="text-sm text-gray-500 mt-2">Saved on {{ record.date }}</p>
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-2xl font-bold text-[#6c5ecf]">Today's Song</h2>
+    <a href="{% url 'edit_daily_record' record.id %}" 
+       class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+      Edit
+    </a>
+  </div>
+  
+  <div class="bg-white p-6 rounded-lg shadow-md space-y-3">
+    <p><strong class="text-gray-700">Song:</strong> {{ record.song_title }} - {{ record.artist }}</p>
+    <p><strong class="text-gray-700">Location:</strong> {{ record.location|default:"Not specified" }}</p>
+    <p><strong class="text-gray-700">Emotion:</strong> 
+      {% if record.emotion %}
+        <span class="px-3 py-1 rounded-full text-sm" style="background-color: {{ record.emotion.color }};">
+          {{ record.emotion.name }}
+        </span>
+      {% else %}
+        Not specified
+      {% endif %}
+    </p>
+    {% if record.photo %}
+      <div class="mt-4">
+        <img src="{{ record.photo.url }}" class="w-full rounded-lg shadow-md" alt="Daily photo">
+      </div>
+    {% endif %}
+    <p class="text-sm text-gray-500 mt-4">Saved on {{ record.date }}</p>
+  </div>
+  
+  <div class="mt-6 text-center">
+    <a href="{% url 'home' %}" class="text-indigo-600 hover:text-indigo-800 font-medium">
+      ← Back to Home
+    </a>
+  </div>
 </div>
 {% endblock %}
