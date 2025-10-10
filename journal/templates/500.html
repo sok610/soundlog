@@ -1,0 +1,20 @@
+
+
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Server Error</title>
+    <link href="{% static 'css/dist/styles.css' %}" rel="stylesheet">
+</head>
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-orange-50">
+    <div class="text-center px-4">
+        <h1 class="text-9xl font-bold text-red-600">500</h1>
+        <h2 class="text-3xl font-semibold text-gray-800 mt-4">Something Went Wrong</h2>
+        <p class="text-gray-600 mt-2 mb-8">We're working on fixing this. Please try again later.</p>
+        <a href="/" class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition">
+            Go Home
+        </a>
+    </div>
+</body>
+</html>

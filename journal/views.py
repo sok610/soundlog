@@ -563,9 +563,11 @@ def get_recommendations(request, entry_id):
                 timeout=(3.05, 5),
             )
             if search_resp.status_code == 200:
-                playlists = search_resp.json().get("playlists", {}).get("items", [])
-                if playlists:
-                    top_playlist_id = playlists[0]["id"]
+                playlists = (search_resp.json().get("playlists") or {}).get("items", [])
+                if playlists and len(playlists) > 0:
+                    valid_playlists = [p for p in playlists if p is not None]
+                    if valid_playlists:
+                        top_playlist_id = valid_playlists[0]["id"]
                     tr_resp = _session.get(
                         f"https://api.spotify.com/v1/playlists/{top_playlist_id}/tracks",
                         headers=headers,
@@ -653,3 +655,8 @@ def view_today_song(request):
         return render(request, "journal/view_daily_record.html", {"record": record})
     else:
         return redirect("add_daily_record")
+
+
+# Temporary view to test 500 error page (remove after testing)
+def test_500(request):
+    raise Exception("This is a test error to trigger 500 page")

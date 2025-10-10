@@ -139,8 +139,8 @@ def prefetch_recommendations(entry_id):
             params={"q": f"{emotion or 'chill'} playlist", "type": "playlist", "limit": 5, "market": "US"}, timeout=(3.05,5)
         )
         if search_resp.status_code == 200:
-            playlists = search_resp.json().get("playlists", {}).get("items", [])
-            if playlists:
+            playlists = (search_resp.json().get("playlists") or {}).get("items", [])
+            if playlists and len(playlists) > 0:
                 pid = playlists[0]["id"]
                 tr_resp = _session.get(f"https://api.spotify.com/v1/playlists/{pid}/tracks", headers=headers, params={"market": "US"}, timeout=(3.05,5))
                 if tr_resp.status_code == 200:
