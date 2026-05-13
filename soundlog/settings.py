@@ -26,7 +26,6 @@ USE_S3 = os.getenv("USE_S3", "False").lower() == "true"
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET")
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -92,6 +91,7 @@ if USE_S3:
             "BACKEND": "soundlog.storage_backends.StaticStorage",
         }
     }
+    
 # When Not using S3; in Development Environment
 else:
     STATIC_URL = '/static/'
@@ -195,7 +195,7 @@ LOGIN_REDIRECT_URL = 'home'
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Los_Angeles'
 
 USE_I18N = True
 

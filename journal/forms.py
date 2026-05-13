@@ -4,11 +4,21 @@ from .models import JournalEntry, Comment, DailyRecord
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
+from django import forms
+from .models import JournalEntry
+from django.forms.widgets import FileInput
+
 class JournalEntryForm(forms.ModelForm):
     class Meta:
         model = JournalEntry
-        fields = ['title', 'content', 'hashtags', 'emotions', 'song_title', 'song_url', 'lyric_snippet', 'image']
+        fields = ['answer_text', 'emotions', 'song_title', 'song_url', 'image']
+        
         widgets = {
+            'answer_text': forms.Textarea(attrs={
+                'rows': 4,
+                'placeholder': "What's the story behind this track?",
+                'class': "w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
+            }),
             'song_title': forms.HiddenInput(),
             'song_url': forms.HiddenInput(),
             'image': FileInput(attrs={

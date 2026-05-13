@@ -25,6 +25,7 @@ urlpatterns = [
     path("user/<str:username>/followers/", views.followers_list, name="followers_list"),
     path("notifications/", views.notification_list, name="notification_list"),
     path("notifications/<int:pk>/read/", views.mark_notification_as_read, name='mark_notification_as_read'),
+    path("profile/edit-qna/", views.edit_profile_qna, name="edit_profile_qna"),
     path("comments/<int:comment_id>/edit/", views.edit_comment, name="edit_comment"),
     path("comments/<int:comment_id>/delete/", views.delete_comment, name="delete_comment"),
 
@@ -51,5 +52,6 @@ urlpatterns = [
     path("daily/today/", views.view_today_song, name="view_today_song"),
     path("calendar/", views.mood_calendar, name="mood_calendar"),
     path("calendar/<int:year>/<int:month>/", views.mood_calendar, name="mood_calendar_month"),
+
 
 ]

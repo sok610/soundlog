@@ -2,6 +2,8 @@ from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.utils import timezone
+from .models import Prompt, ProfileAnswer
 from django.views.decorators.cache import never_cache
 from .forms import JournalEntryForm, CommentForm, DailyRecordForm
 from django.contrib.auth import login
@@ -15,6 +17,8 @@ from .utils.spotify import SpotifyTokenManager
 from collections import defaultdict
 from .tasks import analyze_entry
 from django.utils.timezone import now
+from django.utils import timezone
+import pytz
 from datetime import date
 import requests
 import random
@@ -58,9 +62,6 @@ def home(request):
             author__in=[request.user] + following_users
         ).order_by("-created_at")
 
-        for entry in entries:
-            entry.hashtag_list = [tag.strip() for tag in entry.hashtags.split(',') if tag.strip()]
-
         return render(request, "journal/feed.html", {"entries": entries})
     else:
         return render(request, "journal/landing.html")
@@ -100,11 +101,27 @@ def mood_calendar(request):
 
 @login_required
 def write_entry(request):
+    user_tz = pytz.timezone('America/Los_Angeles')
+    today_in_la = timezone.now().astimezone(user_tz).date()
+
+    # 1. Retrieve today's prompt from soundlog-ai
+    today_prompt = Prompt.objects.filter(
+        prompt_type='DAILY',
+        created_at=today_in_la
+    ).last()
+
+    if not today_prompt:
+        today_prompt = Prompt.objects.filter(prompt_type='DAILY').order_by('-created_at').first()
+
     if request.method == "POST":
         form = JournalEntryForm(request.POST, request.FILES)
         if form.is_valid():
             entry = form.save(commit=False)
             entry.author = request.user
+
+            if today_prompt:
+                entry.parent_prompt = today_prompt
+
             entry.save()
 
             emotion_ids = request.POST.getlist("emotions")
@@ -115,9 +132,42 @@ def write_entry(request):
             return redirect("home")
     else:
         form = JournalEntryForm()
+
+    print(f"today prompt: {today_prompt}")
     
     emotions = Emotion.objects.all()
-    return render(request, "journal/write.html", {"form": form, "emotions": emotions})
+    return render(request, "journal/write.html", {
+        "form": form,
+        "emotions": emotions,
+        "today_prompt": today_prompt
+    })
+
+@login_required
+def edit_profile_qna(request):
+    all_prompts = Prompt.objects.filter(prompt_type='PREFERENCE').distinct()
+    
+    if request.method == "POST":
+        ProfileAnswer.objects.filter(user=request.user).delete()
+        
+        for i in range(1, 7):
+            prompt_id = request.POST.get(f'prompt_slot_{i}')
+            answer_text = request.POST.get(f'answer_slot_{i}')
+            
+            if prompt_id and answer_text:
+                prompt = Prompt.objects.get(id=prompt_id)
+                ProfileAnswer.objects.create(
+                    user=request.user,
+                    prompt=prompt,
+                    answer_text=answer_text
+                )
+        return redirect('user_profile', username=request.user.username)
+
+    current_answers = list(ProfileAnswer.objects.filter(user=request.user)[:6])
+    
+    return render(request, "journal/edit_profile_qna.html", {
+        "all_prompts": all_prompts,
+        "current_answers": current_answers
+    })
 
 def signup(request):
     if request.method == "POST":
@@ -153,6 +203,7 @@ def user_profile(request, username):
     target_user = get_object_or_404(User, username=username)
     profile = target_user.profile
     entries = JournalEntry.objects.filter(author=target_user).order_by("-created_at")
+    profile_answers = ProfileAnswer.objects.filter(user=target_user).select_related('prompt')[:6]
 
     # check the following status
     is_own_profile = request.user == target_user
@@ -164,6 +215,7 @@ def user_profile(request, username):
         "target_user": target_user,
         "profile": profile,
         "entries": entries,
+        "profile_answers": profile_answers,
         "is_own_profile": is_own_profile,
         "is_following": is_following,
         "follower_count": target_user.profile.followers.count()

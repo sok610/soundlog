@@ -10,28 +10,31 @@ class Emotion(models.Model):
     
     def __str__(self):
         return self.name
+    
+class Prompt(models.Model):
+    TYPE_CHOICES = [
+        ('DAILY', 'Daily Song Diary'),   
+        ('PREFERENCE', 'Preference Profiling'),
+    ]
+    content = models.TextField()
+    prompt_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='DAILY')
+    created_at = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"[{self.prompt_type}] {self.content[:20]}..."
 
 class JournalEntry(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    title = models.CharField(max_length=100)
-    content = models.TextField()
-    hashtags = models.CharField(max_length=200, blank=True)
+    prompt = models.ForeignKey(Prompt, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    answer_text = models.TextField() 
+    
     image = models.ImageField(upload_to='entry_images/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     likes = models.ManyToManyField(User, related_name="liked_entries", blank=True)
-    emotions = models.ManyToManyField(Emotion, blank=True, related_name='entries')
-
-    # emotion analysis related fields
-    detected_emotion = models.CharField(max_length=50, blank=True)  # ex: joy, sadness
-    detected_keywords = models.JSONField(default=list, blank=True)  # ["breakup", "loneliness", "hope"]
-
-    # music-related fields
+    emotions = models.ManyToManyField(Emotion, blank=True)
     song_title = models.CharField(max_length=200, blank=True)
     song_url = models.URLField(blank=True)
-    lyric_snippet = models.TextField(blank=True)
-
-    def __str__(self):
-        return f"{self.title} by {self.author.username}"
     
 
 class Profile(models.Model):
@@ -105,5 +108,17 @@ class DailyRecord(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.date} - {self.song_title}"
+    
 
+class ProfileAnswer(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='profile_answers')
+    prompt = models.ForeignKey(Prompt, on_delete=models.CASCADE)
+    answer_text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'prompt')
+
+    def __str__(self):
+        return f"{self.user.username}'s answer to {self.prompt.id}"
 

@@ -2,7 +2,6 @@
 {% block content %}
 <div class="max-w-2xl mx-auto mt-8 p-6 rounded-2xl shadow-lg bg-[#f5f0fb]">
 
-  <!-- User Name and Follow Button -->
   <div class="flex justify-between items-center">
     <h2 class="text-2xl font-semibold text-[#6c5ecf]">@{{ target_user.username }}</h2>
 
@@ -22,36 +21,52 @@
     {% endif %}
   </div>
 
-  <!-- Follower / Following Count -->
   <div class="text-sm text-[#bfa7f2] mt-2 flex gap-4">
-    <a href="{% url 'followers_list' target_user.username %}" class="hover:underline hover:text-[#a88fe8]">
-      <strong>{{ profile.followers.count }}</strong> followers
-    </a>
-    <a href="{% url 'following_list' target_user.username %}" class="hover:underline hover:text-[#a88fe8]">
-      <strong>{{ profile.following.count }}</strong> following
-    </a>
+    <span><strong>{{ profile.followers.count }}</strong> followers</span>
+    <span><strong>{{ profile.following.count }}</strong> following</span>
   </div>
 
   <hr class="my-4 border-[#e0d4f7]">
 
-  <!-- Journal Entry List -->
+  <div class="flex flex-col space-y-4 mb-8">
+    {% for answer in profile_answers %}
+      <div class="bg-white/60 p-6 rounded-3xl border border-[#ede6fb] shadow-sm hover:shadow-md transition duration-300">
+        <p class="text-[10px] font-black text-[#bfa7f2] uppercase tracking-[0.2em] mb-2 leading-tight">
+          {{ answer.prompt.content }}
+        </p>
+        <p class="text-lg font-bold text-[#726a60] italic leading-tight">
+          "{{ answer.answer_text }}"
+        </p>
+      </div>
+    {% empty %}
+      {% if is_own_profile %}
+        <div class="w-full py-10 text-center bg-white/40 rounded-2xl border-2 border-dashed border-[#e0d4f7]">
+          <p class="text-[#726a60] mb-3">Your profile is a bit quiet!</p>
+          <a href="{% url 'edit_profile_qna' %}" class="inline-block text-sm font-bold text-[#6c5ecf] hover:underline">
+            + Add your taste answers
+          </a>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  {% if is_own_profile and profile_answers %}
+  <div class="mb-6 text-right">
+      <a href="{% url 'edit_profile_qna' %}" class="text-xs bg-[#6c5ecf] text-white px-4 py-2 rounded-full shadow-sm hover:bg-indigo-700 transition">
+          + Edit My Vibe
+      </a>
+  </div>
+  {% endif %}
+
   <div>
     <h3 class="text-lg font-bold mb-3 text-[#726a60]">Logs</h3>
     {% for entry in entries %}
       <a href="{% url 'entry_detail' entry.id %}"
-        class="block mb-4 p-4 rounded shadow-sm border transition
-          hover:shadow-md hover:scale-[1.01] duration-150
-          {% if entry.emotions.all %}
-            {% with entry.emotions.first.color as bg_color %}
-              "style="background-color: {{ bg_color }};"
-            {% endwith %}
-          {% else %}
-            bg-[#f9f7fb]
-          {% endif %}">
+        class="block mb-4 p-4 rounded shadow-sm border transition hover:shadow-md hover:scale-[1.01] duration-150"
+        style="background-color: {{ entry.emotions.first.color|default:'#f9f7fb' }};">
         
-        <p class="text-[#5e4b3c] whitespace-pre-wrap">{{ entry.content }}</p>
+        <p class="text-[#5e4b3c] font-medium italic">"{{ entry.answer_text }}"</p>
         <p class="text-xs mt-1 text-[#6c5ecf]">{{ entry.created_at|date:"M d, Y" }}</p>
-
       </a>
     {% empty %}
       <p class="text-[#5e4b3c]">No entries yet.</p>

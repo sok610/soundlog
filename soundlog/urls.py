@@ -27,5 +27,5 @@ urlpatterns = [
     path("", include("journal.urls")),
 ]
 
-if settings.DEBUG and not settings.USE_S3:
+if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -5,47 +5,32 @@
 <div class="max-w-xl mx-auto py-12 px-4">
   <h2 class="text-3xl font-bold mb-6 text-center text-[#6c5ecf]">Write a New Entry</h2>
 
+  {% if today_prompt %}
+  <div class="max-w-xl mx-auto mb-8">
+    <div class="relative p-8 bg-white rounded-3xl shadow-[0_10px_40px_rgba(108,94,207,0.1)] border border-indigo-50 overflow-hidden">
+      <div class="absolute -top-10 -right-10 w-32 h-32 bg-purple-100 rounded-full blur-3xl opacity-50"></div>
+      
+      <div class="relative z-10">
+        <div class="flex items-center space-x-2 mb-4">
+          <span class="px-3 py-1 bg-indigo-100 text-[#6c5ecf] text-[10px] font-bold uppercase tracking-[0.2em] rounded-full">
+            Today's Music Prompt
+          </span>
+        </div>
+        
+        <h3 class="text-2xl md:text-3xl font-bold text-gray-800 leading-tight tracking-tight italic">
+          "{{ today_prompt.content }}"
+        </h3>
+        
+        <p class="mt-4 text-sm text-gray-400 font-medium">
+          Pick a track that answers this vibe.
+        </p>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
   <form method="post" enctype="multipart/form-data" class="space-y-6 bg-[#f5f0fb] p-6 rounded-2xl shadow-lg border border-indigo-100">
     {% csrf_token %}
-
-    <!-- Title -->
-    <div>
-      <label for="id_title" class="block text-sm font-semibold text-[#726a60] mb-1">Title</label>
-      {% render_field form.title class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" %}
-    </div>
-
-    <!-- Content -->
-    <div>
-      <label for="id_content" class="block text-sm font-semibold text-[#726a60] mb-1">Content</label>
-      {% render_field form.content rows="8" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-300" %}
-    </div>
-
-    <!--Image-->
-    <div>
-      <label for="id_image" class="block test-sm font-semibold text-[#726a60] mb-1">Image (Optional)</label>
-      {% render_field form.image class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" %}
-    </div>
-
-    <!-- Select Emotions -->
-    <div>
-      <p class="text-sm font-semibold text-[#726a60] mb-2">How are you feeling?</p>
-      <div id="emotion-buttons" class="flex flex-wrap gap-2">
-        {% for emotion in emotions %}
-          {% comment %} 기본 회색 배경, 선택 시 JS로 색상 변경 {% endcomment %}
-          <button
-            type="button"
-            class="emotion-btn px-4 py-1 rounded-full border border-gray-300 text-sm transition"
-            data-id="{{ emotion.id }}"
-            data-color="{{ emotion.color }}"
-            data-default-color="#f3f4f6"
-            style="background-color: #f3f4f6; color: #4b5563;"
-          >
-            {{ emotion.name }}
-          </button>
-        {% endfor %}
-      </div>
-      <div id="selected-emotions"></div>
-    </div>
 
     <!-- Toggle for Music Recommendation -->
     <button type="button" id="toggle-music" class="text-sm text-[#bfa7f2] hover:text-[#a88fe8] hover:underline">
@@ -60,16 +45,41 @@
       <div id="music-results" class="mt-2 space-y-1 text-sm"></div>
     </div>
 
-    <!-- Optional Lyric Snippet (Initially Hidden)-->
-    <div id="lyric-snippet-box" class="hidden mt-4">
-      <label for="id_lyric_snippet" class="block text-sm font-semibold text=[#726a60] mb-1">
-        Favorite lyric line (optional)
-      </label>
-      {% render_field form.lyric_snippet rows="2" placeholder="Add a lyric that spoke to you..." class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-[#cdb4db]" %}
-    </div>
-
     {% render_field form.song_title type="hidden" %}
     {% render_field form.song_url type="hidden" %}
+
+    <!--Answer Text-->
+    <div>
+      <label for="id_answer_text" class="block text-sm font-semibold text-[#726a60] mb-1">Your Answer</label>
+      {% render_field form.answer_text rows="6" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-300"%}
+    </div>
+
+    <!--Image-->
+    <div>
+      <label for="id_image" class="block test-sm font-semibold text-[#726a60] mb-1">Image (Optional)</label>
+      {% render_field form.image class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" %}
+    </div>
+
+    <!-- Select Emotions -->
+    <div>
+      <p class="text-sm font-semibold text-[#726a60] mb-2">How are you feeling?</p>
+      <div id="emotion-buttons" class="flex flex-wrap gap-2">
+        {% for emotion in emotions %}
+          {% comment %} {% endcomment %}
+          <button
+            type="button"
+            class="emotion-btn px-4 py-1 rounded-full border border-gray-300 text-sm transition"
+            data-id="{{ emotion.id }}"
+            data-color="{{ emotion.color }}"
+            data-default-color="#f3f4f6"
+            style="background-color: #f3f4f6; color: #4b5563;"
+          >
+            {{ emotion.name }}
+          </button>
+        {% endfor %}
+      </div>
+      <div id="selected-emotions"></div>
+    </div>
 
     <!-- Submit Button -->
     <div class="text-center">

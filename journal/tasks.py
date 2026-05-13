@@ -139,25 +139,31 @@ def prefetch_recommendations(entry_id):
             params={"q": f"{emotion or 'chill'} playlist", "type": "playlist", "limit": 5, "market": "US"}, timeout=(3.05,5)
         )
         if search_resp.status_code == 200:
-            playlists = (search_resp.json().get("playlists") or {}).get("items", [])
-            if playlists and len(playlists) > 0:
-                pid = playlists[0]["id"]
-                tr_resp = _session.get(f"https://api.spotify.com/v1/playlists/{pid}/tracks", headers=headers, params={"market": "US"}, timeout=(3.05,5))
-                if tr_resp.status_code == 200:
-                    items3 = tr_resp.json().get("items", [])
-                    for it in items3[:5]:
-                        if not it.get("track") or not it["track"].get("name"):
-                            continue
-                        artist_names = [a["name"] for a in (it["track"].get("artists") or []) if a.get("name")]
-                        images = (it["track"].get("album") or {}).get("images") or []
-                        image = images[1]["url"] if len(images) > 1 else (images[0]["url"] if images else None)
-                        tracks.append({
-                            "name": it["track"]["name"],
-                            "artist": ", ".join(artist_names),
-                            "url": it["track"]["external_urls"]["spotify"],
-                            "image": image,
-                            "popularity": it["track"].get("popularity", 0),
-                        })
+            res_data = search_resp.json().get("playlists") or {}
+            items = res_data.get("items") or []
+
+            valid_items = [item for item in items if item is not None]
+
+            if valid_items:
+                pid = valid_items[0].get("id")
+
+                if pid:   
+                    tr_resp = _session.get(f"https://api.spotify.com/v1/playlists/{pid}/tracks", headers=headers, params={"market": "US"}, timeout=(3.05,5))
+                    if tr_resp.status_code == 200:
+                        items3 = tr_resp.json().get("items", [])
+                        for it in items3[:5]:
+                            if not it.get("track") or not it["track"].get("name"):
+                                continue
+                            artist_names = [a["name"] for a in (it["track"].get("artists") or []) if a.get("name")]
+                            images = (it["track"].get("album") or {}).get("images") or []
+                            image = images[1]["url"] if len(images) > 1 else (images[0]["url"] if images else None)
+                            tracks.append({
+                                "name": it["track"]["name"],
+                                "artist": ", ".join(artist_names),
+                                "url": it["track"]["external_urls"]["spotify"],
+                                "image": image,
+                                "popularity": it["track"].get("popularity", 0),
+                            })
 
     if tracks:
         cache.set(cache_key, tracks, timeout=60*60*12)

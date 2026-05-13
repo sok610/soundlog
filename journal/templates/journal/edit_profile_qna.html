@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load profile_extras %}
+{% block content %}
+<div class="max-w-xl mx-auto py-12 px-6">
+  <div class="mb-10">
+    <h2 class="text-3xl font-bold text-[#6c5ecf]">Curate Your Vibe</h2>
+    <p class="text-[#bfa7f2] font-medium mt-2 text-sm uppercase tracking-widest">Select up to 6 music prompts</p>
+  </div>
+  
+  <form method="POST" class="space-y-6">
+    {% csrf_token %}
+    
+    <div class="grid gap-6">
+      {% for i in "123456" %}
+      <div class="bg-white p-6 rounded-3xl shadow-sm border border-indigo-50 relative group">
+        <div class="mb-4">
+          <label class="block text-[10px] font-black text-[#bfa7f2] uppercase tracking-[0.2em] mb-2">Slot {{ forloop.counter }}</label>
+          <select name="prompt_slot_{{ forloop.counter }}" 
+                  class="w-full bg-transparent border-b border-[#e0d4f7] py-2 text-[#726a60] font-bold focus:outline-none focus:border-[#6c5ecf] appearance-none cursor-pointer">
+            <option value="">-- Choose a Prompt --</option>
+            {% for prompt in all_prompts %}
+              <option value="{{ prompt.id }}" {% if prompt.id == current_answers|get_item_prompt_id:forloop.parentloop.counter0 %}selected{% endif %}>
+                {{ prompt.content }}
+              </option>
+            {% endfor %}
+          </select>
+          </div>
+
+        <input type="text" 
+               name="answer_slot_{{ forloop.counter }}" 
+               value="{{ current_answers|get_item_text:forloop.counter0 }}"
+               class="w-full bg-[#fcfaff] border-none rounded-xl px-4 py-3 text-[#726a60] italic font-medium focus:ring-2 focus:ring-[#6c5ecf]/20 outline-none transition"
+               placeholder="Write your answer here...">
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="text-center pt-10">
+      <button type="submit" class="bg-[#6c5ecf] text-white px-12 py-3 rounded-full font-bold shadow-xl hover:bg-indigo-700 hover:-translate-y-1 transition-all duration-300">
+        Save Profile Vibe
+      </button>
+    </div>
+  </form>
+</div>
+
+<style>
+  /* 💡 질문이 많아질 때 select 박스의 스크롤과 가독성을 위한 스타일 */
+  select {
+    scrollbar-width: thin;
+    scrollbar-color: #6c5ecf #f5f0fb;
+  }
+</style>
+{% endblock %}
