@@ -1,0 +1,20 @@
+[Unit]
+Description=soundlog celery worker
+After=network.target redis-server.service postgresql.service
+
+[Service]
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/var/www/soundlog
+EnvironmentFile=/var/www/soundlog/.env
+ExecStart=/var/www/soundlog/.venv/bin/celery \
+    -A soundlog \
+    worker \
+    --loglevel=info \
+    --logfile=/var/log/soundlog/celery.log \
+    --concurrency=2
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

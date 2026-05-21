@@ -18,6 +18,7 @@ urlpatterns = [
 
     # Journal Functionalities
     path("write/", views.write_entry, name="write_entry"),
+    path("discover/", views.prompt_feed, name="prompt_feed"),
 
     # Social Interaction
     path("user/<str:username>/", views.user_profile, name="user_profile"),

@@ -120,7 +120,7 @@ def write_entry(request):
             entry.author = request.user
 
             if today_prompt:
-                entry.parent_prompt = today_prompt
+                entry.prompt = today_prompt
 
             entry.save()
 
@@ -715,6 +715,30 @@ def edit_daily_record(request, record_id):
         'record': record,
         'emotions': emotions,
         'GOOGLE_MAPS_API_KEY': settings.GOOGLE_MAPS_API_KEY
+    })
+
+
+@login_required
+def prompt_feed(request):
+    user_tz = pytz.timezone('America/Los_Angeles')
+    today_in_la = timezone.now().astimezone(user_tz).date()
+
+    today_prompt = Prompt.objects.filter(
+        prompt_type='DAILY',
+        created_at=today_in_la
+    ).last()
+
+    if not today_prompt:
+        today_prompt = Prompt.objects.filter(prompt_type='DAILY').order_by('-created_at').first()
+
+    entries = JournalEntry.objects.filter(
+        prompt=today_prompt
+    ).select_related('author').prefetch_related('emotions', 'likes').order_by('-created_at') if today_prompt else []
+
+    return render(request, "journal/prompt_feed.html", {
+        "today_prompt": today_prompt,
+        "entries": entries,
+        "entry_count": len(entries) if isinstance(entries, list) else entries.count(),
     })
 
 
