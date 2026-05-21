@@ -24,11 +24,8 @@ echo "[2/9] Updating system packages..."
 sudo apt-get update -y && sudo apt-get upgrade -y
 
 echo "[3/9] Installing Python 3.9, PostgreSQL, Redis, Nginx, build tools..."
-sudo apt-get install -y software-properties-common
-sudo add-apt-repository ppa:deadsnakes/ppa -y
-sudo apt-get update -y
 sudo apt-get install -y \
-    python3.9 python3.9-venv python3.9-dev \
+    python3 python3-venv python3-dev python3-pip \
     postgresql postgresql-contrib libpq-dev \
     redis-server \
     nginx \

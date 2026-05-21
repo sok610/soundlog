@@ -11,7 +11,7 @@ cd "$APP_DIR"
 git pull
 
 echo "[2/7] Installing/updating Python dependencies..."
-python3.9 -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
@@ -28,7 +28,7 @@ python manage.py init_emotions
 echo "[6/7] Setting up soundlog-ai virtualenv..."
 cd "$AI_DIR"
 if [ -f ".env" ]; then
-    python3.9 -m venv .venv
+    python3 -m venv .venv
     source .venv/bin/activate
     pip install --upgrade pip
     pip install -r requirements.txt 2>/dev/null || pip install \
