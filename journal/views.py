@@ -25,7 +25,25 @@ import random
 import calendar
 import time
 import logging
+from io import BytesIO
+from django.core.files.base import ContentFile
 from django.core.cache import cache
+
+def convert_heic_if_needed(image_file):
+    if not image_file or not image_file.name.lower().endswith('.heic'):
+        return image_file
+    try:
+        import pillow_heif
+        from PIL import Image
+        pillow_heif.register_heif_opener()
+        img = Image.open(image_file).convert('RGB')
+        buffer = BytesIO()
+        img.save(buffer, format='JPEG', quality=85)
+        new_name = image_file.name.rsplit('.', 1)[0] + '.jpg'
+        return ContentFile(buffer.getvalue(), name=new_name)
+    except Exception:
+        return image_file
+
 
 spotify_token_manager = SpotifyTokenManager(
     settings.SPOTIFY_CLIENT_ID,
@@ -121,6 +139,9 @@ def write_entry(request):
 
             if today_prompt:
                 entry.prompt = today_prompt
+
+            if entry.image:
+                entry.image = convert_heic_if_needed(entry.image)
 
             entry.save()
 
@@ -361,6 +382,10 @@ def edit_entry(request, entry_id):
         if form.is_valid():
             updated_entry = form.save(commit=False)
             updated_entry.author = request.user
+
+            if updated_entry.image:
+                updated_entry.image = convert_heic_if_needed(updated_entry.image)
+
             updated_entry.save()
 
             # update emotions
