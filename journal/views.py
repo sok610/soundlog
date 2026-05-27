@@ -29,13 +29,17 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 from django.core.cache import cache
 
+try:
+    import pillow_heif
+    pillow_heif.register_heif_opener()
+except ImportError:
+    pass
+
 def convert_heic_if_needed(image_file):
     if not image_file or not image_file.name.lower().endswith('.heic'):
         return image_file
     try:
-        import pillow_heif
         from PIL import Image
-        pillow_heif.register_heif_opener()
         img = Image.open(image_file).convert('RGB')
         buffer = BytesIO()
         img.save(buffer, format='JPEG', quality=85)
