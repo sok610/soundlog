@@ -14,6 +14,8 @@ echo "[2/7] Installing/updating Python dependencies..."
 python3 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
+# Install torch CPU-only first to avoid downloading multi-GB CUDA packages
+pip install --prefer-binary torch --index-url https://download.pytorch.org/whl/cpu
 pip install --prefer-binary -r requirements.txt
 
 echo "[3/7] Collecting static files..."
