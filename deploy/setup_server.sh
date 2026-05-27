@@ -30,7 +30,8 @@ sudo apt-get install -y \
     redis-server \
     nginx \
     build-essential git \
-    libjpeg-dev zlib1g-dev libpng-dev
+    libjpeg-dev zlib1g-dev libpng-dev \
+    libheif-dev libde265-dev
 
 echo "[4/9] Setting up PostgreSQL..."
 sudo systemctl enable postgresql
