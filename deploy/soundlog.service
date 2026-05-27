@@ -8,13 +8,13 @@ Group=ubuntu
 WorkingDirectory=/var/www/soundlog
 EnvironmentFile=/var/www/soundlog/.env
 RuntimeDirectory=soundlog
-ExecStartPre=/bin/mkdir -p /var/log/soundlog
+LogsDirectory=soundlog
 ExecStart=/var/www/soundlog/.venv/bin/gunicorn \
     --workers 3 \
     --bind unix:/run/soundlog/gunicorn.sock \
     --timeout 120 \
     --access-logfile /var/log/soundlog/access.log \
-    --error-logfile /var/log/soundlog/error.log \
+    --error-logfile /var/log/soundlog/gunicorn.log \
     soundlog.wsgi:application
 ExecReload=/bin/kill -s HUP $MAINPID
 Restart=on-failure
