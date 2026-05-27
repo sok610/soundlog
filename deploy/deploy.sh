@@ -11,10 +11,10 @@ cd "$APP_DIR"
 git pull
 
 echo "[2/7] Installing/updating Python dependencies..."
-python3.12 -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
-pip install -r requirements.txt
+pip install --prefer-binary -r requirements.txt
 
 echo "[3/7] Collecting static files..."
 python manage.py collectstatic --no-input
@@ -28,10 +28,10 @@ python manage.py init_emotions
 echo "[6/7] Setting up soundlog-ai virtualenv..."
 cd "$AI_DIR"
 if [ -f ".env" ]; then
-    python3.12 -m venv .venv
+    python3 -m venv .venv
     source .venv/bin/activate
     pip install --upgrade pip
-    pip install -r requirements.txt 2>/dev/null || pip install \
+    pip install --prefer-binary -r requirements.txt 2>/dev/null || pip install \
         google-generativeai psycopg2-binary python-dotenv
     deactivate
 else
