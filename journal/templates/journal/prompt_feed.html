@@ -48,6 +48,12 @@
             </div>
           {% endif %}
 
+          {% if entry.image %}
+          <div class="mb-5 relative z-20">
+            <img src="{{ entry.image.url }}" alt="" class="w-full h-auto rounded-xl shadow-sm">
+          </div>
+          {% endif %}
+
           <div class="mb-5">
             <p class="text-xl text-[#6a5748] leading-tight italic font-bold tracking-tight whitespace-pre-wrap">
               "{{ entry.answer_text }}"
