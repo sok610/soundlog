@@ -44,7 +44,7 @@ nltk==3.9.1
 numpy
 packaging==25.0
 pillow==11.2.1
-pillow-heif==0.22.0
+pillow-heif
 prompt_toolkit==3.0.52
 psycopg2-binary==2.9.10
 Pygments==2.19.1
