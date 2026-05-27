@@ -29,7 +29,8 @@ sudo apt-get install -y \
     postgresql postgresql-contrib libpq-dev \
     redis-server \
     nginx \
-    build-essential git
+    build-essential git \
+    libjpeg-dev zlib1g-dev libpng-dev
 
 echo "[4/9] Setting up PostgreSQL..."
 sudo systemctl enable postgresql
