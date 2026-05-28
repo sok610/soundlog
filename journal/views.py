@@ -76,15 +76,20 @@ except Exception:
 def home(request):
     if request.user.is_authenticated:
         following_profiles = request.user.profile.following.all()
-
         following_users = [profile.user for profile in following_profiles]
-
-        # user filter to bring the current user's entries
         entries = JournalEntry.objects.filter(
             author__in=[request.user] + following_users
         ).order_by("-created_at")
 
-        return render(request, "journal/feed.html", {"entries": entries})
+        user_tz = pytz.timezone('America/Los_Angeles')
+        today_in_la = timezone.now().astimezone(user_tz).date()
+        today_prompt = Prompt.objects.filter(
+            prompt_type='DAILY', created_at=today_in_la
+        ).last()
+        if not today_prompt:
+            today_prompt = Prompt.objects.filter(prompt_type='DAILY').order_by('-created_at').first()
+
+        return render(request, "journal/feed.html", {"entries": entries, "today_prompt": today_prompt})
     else:
         return render(request, "journal/landing.html")
 
@@ -531,6 +536,8 @@ def get_recommendations(request, entry_id):
     tracks = []
     try:
         token = spotify_token_manager.get_token()
+        if not token:
+            return render(request, "journal/_recommendations.html", {"tracks": [], "query": emotion or "mood"})
         headers = {"Authorization": f"Bearer {token}"}
 
         resp = _session.get(

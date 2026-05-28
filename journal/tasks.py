@@ -29,7 +29,7 @@ _spotify = SpotifyTokenManager(settings.SPOTIFY_CLIENT_ID, settings.SPOTIFY_CLIE
 @shared_task
 def analyze_entry(entry_id):
     entry = JournalEntry.objects.get(id=entry_id)
-    text = entry.content
+    text = entry.answer_text
 
     # ✅ 토큰화 + truncate
     tokens = tokenizer(text, truncation=True, max_length=512)
