@@ -509,9 +509,12 @@ def delete_comment(request, comment_id):
 def get_recommendations(request, entry_id):
     entry = get_object_or_404(JournalEntry, id=entry_id)
 
-    # Build seeds/targets
     emotion = (entry.detected_emotion or "").lower().strip()
-    seed_genres = (EMOTION_GENRES.get(emotion) or DEFAULT_GENRES)[:3]
+    if not emotion:
+        return render(request, "journal/_recommendations.html", {"tracks": [], "query": ""})
+
+    # Build seeds/targets
+    seed_genres = EMOTION_GENRES.get(emotion, DEFAULT_GENRES)[:3]
 
     targets = EMOTION_FEATURES.get(emotion, {})
     params = {

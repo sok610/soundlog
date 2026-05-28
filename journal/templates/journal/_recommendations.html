@@ -3,13 +3,13 @@
   <h3 class="text-lg font-semibold text-[#6c5ecf]">
     🎵 Recommended Tracks for "{{ query|title }}"
   </h3>
-  
+
   {% for track in tracks %}
   <div class="flex items-center gap-3 p-3 rounded-xl bg-[#f8f6fc] hover:bg-[#ede6fb] transition">
     {% if track.image %}
     <img src="{{ track.image }}" alt="{{ track.name }}" class="w-12 h-12 rounded-md shadow" />
     {% endif %}
-    
+
     <div class="flex-1">
       <p class="text-sm font-bold text-[#5e4b3c]">{{ track.name }}</p>
       <p class="text-xs text-[#9b88cc]">{{ track.artist }}</p>
@@ -22,8 +22,4 @@
   </div>
   {% endfor %}
 </div>
-{% else %}
-<p class="text-sm text-gray-400 italic">
-  No recommendations found for "{{ query }}".
-</p>
 {% endif %}
