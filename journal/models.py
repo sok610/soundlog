@@ -35,7 +35,10 @@ class JournalEntry(models.Model):
     emotions = models.ManyToManyField(Emotion, blank=True)
     song_title = models.CharField(max_length=200, blank=True)
     song_url = models.URLField(blank=True)
-    
+    lyric_snippet = models.TextField(blank=True)
+    detected_emotion = models.CharField(max_length=50, blank=True)
+    detected_keywords = models.JSONField(default=list, blank=True)
+
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
